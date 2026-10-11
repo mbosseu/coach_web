@@ -1,0 +1,18 @@
+{
+  "name": "boxing-center-coachs",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node scripts/check.cjs",
+    "start": "node scripts/start.cjs",
+    "admin:create": "node scripts/admin.cjs",
+    "backup": "node scripts/backup.cjs"
+  },
+  "engines": {
+    "node": ">=24.11.1 <25"
+  },
+  "dependencies": {
+    "better-sqlite3": "13.0.3"
+  }
+}
