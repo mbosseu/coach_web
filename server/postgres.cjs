@@ -15,7 +15,9 @@ function poolOptions(cfg){
   const url=new URL(cfg.databaseUrl);
   // Never let connection-string SSL options override certificate verification.
   for(const name of ['sslmode','sslcert','sslkey','sslrootcert'])url.searchParams.delete(name);
-  return{connectionString:url.toString(),max:2,idleTimeoutMillis:10000,connectionTimeoutMillis:10000,
+  return{connectionString:url.toString(),max:2,idleTimeoutMillis:10000,
+    // Cold starts on Vercel + Supavisor need a wider first-connect budget.
+    connectionTimeoutMillis:cfg.serverless?20000:10000,
     allowExitOnIdle:true,ssl:{rejectUnauthorized:true,ca:[...tls.getCACertificates('default'),supabaseCa,...(cfg.databaseCa?[cfg.databaseCa.replace(/\\n/g,'\n')]:[])]}};
 }
 class PostgresStore{

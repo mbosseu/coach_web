@@ -1,8 +1,9 @@
 /* Interface connectée : les permissions et mutations sont vérifiées par le serveur. */
 'use strict';
-let db={...BC.createDB(),users:[]},csrf='',mailEnabled=false,storageWarning='',busy=false;
+let db={...BC.createDB(),users:[]},csrf='',mailEnabled=false,storageWarning='',busy=false,sessionReady=false,sessionError='';
 const current=new Date(),previous=new Date(current.getFullYear(),current.getMonth()-1,1);
 const state={page:'dashboard',period:BC.periodKey(previous),target:'minimes',week:0,userId:null,detailId:'',dialog:null,authView:'login',authRole:'coach',adminFilter:'all',coachFilter:'all',search:'',navOpen:false};
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const compactNavigation=window.matchMedia('(max-width:1024px)');
 const escapeHTML=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fullName=u=>u?`${u.firstName} ${u.lastName}`:'Coach';
@@ -18,9 +19,40 @@ const goBtn=(text,page,cls='')=>`<button type="button" class="btn ${cls}" data-g
 const badge=(text,cls='')=>`<span class="pill ${cls}">${escapeHTML(text)}</span>`;
 const empty=(title,copy)=>`<div class="empty"><strong>${title}</strong><span>${copy}</span></div>`;
 function accept(response){if(response.db)db=response.db;if('userId' in response)state.userId=response.userId;if(response.csrf)csrf=response.csrf;if('mailEnabled' in response)mailEnabled=response.mailEnabled;if(response.serverDate)current.setTime(BC.parseDate(response.serverDate).getTime());return response}
-async function api(route,values){const response=await fetch('/api/'+route,{method:values?'POST':'GET',credentials:'same-origin',headers:values?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:values?JSON.stringify(values):undefined});const result=await response.json();if(!response.ok){if(response.status===401&&user()){state.userId=null;db={...BC.createDB(),users:[]};render();await bootstrap()}throw Error(result.error||'Le serveur est indisponible.')}return accept(result)}
+async function api(route,values,{timeout=30000}={}){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeout);
+  try{
+    const response=await fetch('/api/'+route,{method:values?'POST':'GET',credentials:'same-origin',signal:controller.signal,headers:values?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{},body:values?JSON.stringify(values):undefined});
+    const result=await response.json();
+    if(!response.ok){if(response.status===401&&user()){state.userId=null;db={...BC.createDB(),users:[]};sessionReady=false;render();await bootstrap()}throw Error(result.error||'Le serveur est indisponible.')}
+    return accept(result);
+  }catch(error){
+    if(error.name==='AbortError')throw Error('Le serveur met trop de temps à répondre. Réessayez.');
+    throw error;
+  }finally{clearTimeout(timer)}
+}
 async function mutate(action,values={}){return(await api('action',{action,period:state.period,...values})).result}
-async function bootstrap(){try{await api('session');storageWarning='';render()}catch{document.querySelector('#app').innerHTML='<section class="panel startup-state" role="alert"><h1>Connexion au serveur indisponible.</h1><p>Vos données enregistrées ne sont pas modifiées. Vérifiez que le serveur est démarré.</p><button class="btn primary" data-action="retry-bootstrap">Réessayer</button></section>'}}
+async function bootstrap(){
+  sessionReady=false;sessionError='';
+  if(!user())render();
+  let lastError;
+  for(let attempt=0;attempt<5;attempt++){
+    try{
+      await api('session',null,{timeout:20000+attempt*5000});
+      sessionReady=true;sessionError='';storageWarning='';
+      render();
+      return;
+    }catch(error){
+      lastError=error;
+      if(!user())render();
+      if(attempt<4)await wait(700*(attempt+1));
+    }
+  }
+  sessionReady=false;
+  sessionError=lastError?.message||'Connexion au serveur indisponible.';
+  if(user()){state.userId=null;db={...BC.createDB(),users:[]}}
+  render();
+}
 let profileDirty=false;
 document.addEventListener('input',e=>{if(e.target.closest('form'))profileDirty=true});
 // Refresh shared availability without destroying an unfinished form or dialog.
@@ -116,8 +148,10 @@ function auth(){
         ${!forgot?passwordField('password',reset?'Nouveau mot de passe':'Mot de passe',register||reset?'new-password':'current-password',register||reset?12:1):''}
         ${register||reset?passwordField('confirmation','Confirmer le mot de passe','new-password',12):''}
         ${forgot&&!mailEnabled?'<p class="notice" role="status">Envoi d’e-mails désactivé sur cet environnement. Contactez la direction pour votre accès.</p>':''}
+        ${!sessionReady&&!sessionError?'<p class="session-pending" role="status">Préparation sécurisée de la session…</p>':''}
+        ${sessionError?`<div class="session-error" role="alert"><p>${escapeHTML(sessionError)}</p>${btn('Réessayer','retry-bootstrap','login-secondary')}</div>`:''}
         <div id="form-status" role="alert" aria-live="assertive"></div>
-        <button class="btn login-submit" type="submit" ${forgot&&!mailEnabled?'disabled':''}>${register?'Créer mon compte':reset?'Enregistrer le mot de passe':forgot?'Recevoir le lien':'Se connecter'} <span aria-hidden="true">→</span></button>
+        <button class="btn login-submit" type="submit" ${(!sessionReady||(forgot&&!mailEnabled))?'disabled':''}>${register?'Créer mon compte':reset?'Enregistrer le mot de passe':forgot?'Recevoir le lien':'Se connecter'} <span aria-hidden="true">→</span></button>
         ${footer}
       </form>
     </section>
@@ -174,9 +208,9 @@ function exportRows(courses,coachId){return [['Coach','Société / association',
 function download(text,name,type){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([text],{type}));a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function csv(rows){return '\ufeff'+rows.map(row=>row.map(value=>{let text=String(value);if(/^[=+@-]/.test(text))text="'"+text;return '"'+text.replace(/"/g,'""')+'"'}).join(';')).join('\r\n')}
 function formError(form,error){const status=form.querySelector('[role="alert"]');if(status)status.textContent=error.message;else toast(error.message,true)}
-document.addEventListener('submit',async e=>{e.preventDefault();const form=e.target,values=Object.fromEntries(new FormData(form)),button=form.querySelector('[type="submit"]'),status=form.querySelector('[role="alert"]');if(!form.reportValidity()||busy)return;busy=true;button.disabled=true;button.setAttribute('aria-busy','true');if(status&&form.id==='login-form')status.textContent='Connexion en cours…';try{
+document.addEventListener('submit',async e=>{e.preventDefault();const form=e.target,values=Object.fromEntries(new FormData(form)),button=form.querySelector('[type="submit"]'),status=form.querySelector('#form-status');if(!form.reportValidity()||busy)return;if(!sessionReady){if(status)status.textContent='Patientez : la session sécurisée n’est pas encore prête.';return}busy=true;button.disabled=true;button.setAttribute('aria-busy','true');if(status&&form.id==='login-form')status.textContent='Connexion en cours…';try{
   for(const name of ['firstName','lastName','company','phone'])if(name in values&&!values[name].trim())throw Error('Renseignez toutes les coordonnées professionnelles.');
-  if(form.id==='login-form'){await api('login',{...values,role:state.authRole});navigate(user().role==='admin'?'overview':'dashboard');}
+  if(form.id==='login-form'){await api('login',{...values,role:state.authRole},{timeout:45000});navigate(user().role==='admin'?'overview':'dashboard');}
   else if(form.id==='register-form'){const response=await api('register',values);state.authView='login';render();toast(response.message);}
   else if(form.id==='forgot-form'){const response=await api('reset/request',values);form.querySelector('[role="alert"]').textContent=response.message;}
   else if(form.id==='reset-form'){const response=await api('reset/confirm',{...values,token:state.resetToken});state.resetToken='';state.authView='login';history.replaceState(null,'',location.pathname);render();toast(response.message);}
@@ -235,5 +269,4 @@ compactNavigation.addEventListener('change',()=>{const inSidebar=document.active
 function routeId(id){try{return decodeURIComponent(id||'')}catch{return ''}}
 window.addEventListener('popstate',()=>{const [page,id]=location.hash.slice(1).split('/');state.page=page||'dashboard';state.detailId=routeId(id);state.dialog=null;state.navOpen=false;render();focusContent()});
 if(location.hash){const [page,id]=location.hash.slice(1).split('/');if(page==='reset'){state.authView='reset';state.resetToken=id;history.replaceState(null,'',location.pathname)}else{state.page=page;state.detailId=routeId(id)}}
-document.querySelector('#app').innerHTML='<section class="panel startup-state" role="status"><h1>Boxing Center</h1><p>Connexion à votre espace…</p></section>';
 bootstrap();

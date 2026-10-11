@@ -280,6 +280,27 @@
   font-size:13px;
   line-height:1.45;
 }
+.session-pending{
+  margin:0 0 12px;
+  padding:10px 12px;
+  border-radius:10px;
+  background:rgba(139,108,247,.12);
+  border:1px solid rgba(197,183,255,.28);
+  color:var(--violet-soft);
+  font-size:13px;
+  line-height:1.45;
+}
+.session-error{
+  margin:0 0 12px;
+  padding:12px;
+  border-radius:10px;
+  background:rgba(255,100,120,.1);
+  border:1px solid rgba(255,180,192,.35);
+  display:grid;
+  gap:10px;
+}
+.session-error p{margin:0;color:#ffb4c0;font-size:13px;line-height:1.45}
+.session-error .login-secondary{min-height:40px}
 .login-redesign .notice{
   margin:0 0 14px;
   padding:12px 14px;
