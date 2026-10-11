@@ -1,5 +1,7 @@
 # Préparation à la production
 
+> **Historique de l’architecture Node/SQLite.** L’utilisateur a désormais choisi Vercel + Supabase. Utiliser [SUPABASE_VERCEL.md](C:/Users/PC/Desktop/coach_web/SUPABASE_VERCEL.md) pour cette cible. Les consignes de secrets, de validation métier et de recette restent applicables ; la restriction Vercel ci-dessous concernait SQLite locale, pas PostgreSQL distant.
+
 ## Décision actuelle : mise en production non validée
 
 Le code a passé la recette locale, mais les conditions ci-dessous doivent être remplies avant un déploiement. Ce document n’est pas une autorisation de publier.

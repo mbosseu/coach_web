@@ -2,10 +2,12 @@ node_modules/
 .env
 .env.*
 !.env.example
+!.env.vercel.example
 data/
 backups/
 output/
 tmp/
+public/
 *.sqlite
 *.sqlite3
 *.sqlite-wal
@@ -13,3 +15,5 @@ tmp/
 *.sqlite3-wal
 *.sqlite3-shm
 *.log
+
+.vercel

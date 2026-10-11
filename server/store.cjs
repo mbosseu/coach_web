@@ -3,8 +3,10 @@ const Database=require('better-sqlite3');
 const fs=require('node:fs');
 const path=require('node:path');
 const BC=require('../model.js');
+const {serial}=require('./serial.cjs');
 class Store{
   constructor(file){
+    this.kind='sqlite';this.request=serial();
     if(file!==':memory:')fs.mkdirSync(path.dirname(file),{recursive:true,mode:0o700});
     this.sql=new Database(file);
     if(file!==':memory:')fs.chmodSync(file,0o600);
@@ -23,6 +25,7 @@ class Store{
       CREATE TABLE IF NOT EXISTS limits(key TEXT PRIMARY KEY,count INTEGER NOT NULL,expires INTEGER NOT NULL);
       INSERT OR IGNORE INTO migrations VALUES(1,strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
     if(!this.sql.prepare('PRAGMA table_info(outbox)').all().some(c=>c.name==='expires'))this.sql.exec("ALTER TABLE outbox ADD COLUMN expires INTEGER; INSERT OR IGNORE INTO migrations VALUES(2,strftime('%Y-%m-%dT%H:%M:%fZ','now'));");
+    if(!this.sql.prepare('PRAGMA table_info(outbox)').all().some(c=>c.name==='sending_at'))this.sql.exec('ALTER TABLE outbox ADD COLUMN sending_at INTEGER');
     if(!this.sql.prepare('SELECT id FROM state').get()){
       const db=BC.createDB();db.users=[];delete db.credentials;
       this.sql.prepare('INSERT INTO state(id,payload) VALUES(1,?)').run(JSON.stringify(db));
@@ -30,7 +33,7 @@ class Store{
     // A crash after dispatch has an ambiguous outcome; never automatically duplicate it.
     this.sql.exec("UPDATE outbox SET status='uncertain',last_error='Envoi interrompu : vérifier le journal Brevo avant toute reprise.' WHERE status='sending'");
   }
-  transaction(fn){this.sql.exec('BEGIN IMMEDIATE');try{const result=fn();this.sql.exec('COMMIT');return result}catch(e){this.sql.exec('ROLLBACK');throw e}}
+  transaction(fn){return this.request(async()=>{this.sql.exec('BEGIN IMMEDIATE');try{const result=await fn();this.sql.exec('COMMIT');return result}catch(e){this.sql.exec('ROLLBACK');throw e}})}
   profiles(){return this.sql.prepare('SELECT id,role,active,profile FROM users').all().map(u=>({...JSON.parse(u.profile),id:u.id,role:u.role,active:Boolean(u.active)}))}
   load(){const row=this.sql.prepare('SELECT * FROM state WHERE id=1').get();const db=JSON.parse(row.payload);db.users=this.profiles();db.audit=this.sql.prepare('SELECT payload FROM audit ORDER BY rowid DESC').all().map(r=>JSON.parse(r.payload));db.revision=row.revision;return db}
   save(db){
@@ -48,6 +51,7 @@ class Store{
     if(old?.count>=max)return false;
     this.sql.prepare('INSERT INTO limits VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1').run(key,now+window);return true;
   })}
+  ready(){return Promise.resolve()}
   close(){this.sql.close()}
 }
 module.exports={Store};

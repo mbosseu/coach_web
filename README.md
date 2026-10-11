@@ -1,8 +1,8 @@
 # Boxing Center — validation des heures coachs
 
-Application frontend + API Node.js + SQLite. Les données et les permissions sont maintenant gérées par le serveur, et non par le stockage du navigateur. Aucun déploiement n’a été effectué.
+Application frontend + API Node.js. **Cible choisie : Vercel + PostgreSQL Supabase**, projet `jnlmnsogppsdmquvzfzy`. Recette locale et initialisation du schéma `boxing_center` terminées : voir [SUPABASE_VERCEL.md](C:/Users/PC/Desktop/coach_web/SUPABASE_VERCEL.md). Le déploiement Vercel (variables, admin, cron mail) reste à faire. SQLite reste disponible sans `.env.supabase.local`. Les permissions sont gérées par le serveur, pas par le stockage du navigateur.
 
-État de la recette du 11 octobre 2026 : voir [AUDIT_PRODUCTION.md](C:/Users/PC/Desktop/coach_web/AUDIT_PRODUCTION.md). Préparation du serveur : [PRODUCTION.md](C:/Users/PC/Desktop/coach_web/PRODUCTION.md).
+Recette Node/SQLite antérieure : [AUDIT_PRODUCTION.md](C:/Users/PC/Desktop/coach_web/AUDIT_PRODUCTION.md). Ancien hébergement persistant : [PRODUCTION.md](C:/Users/PC/Desktop/coach_web/PRODUCTION.md).
 
 ## Démarrage local
 
@@ -15,7 +15,7 @@ npm test
 npm start
 ```
 
-Ouvrir [l’application locale](http://127.0.0.1:4173/). Le serveur reste sur la boucle locale. Il n’existe aucun compte administrateur par défaut. Le fichier `.env` privé contient la configuration locale ; ne jamais le partager ni le versionner. `.env.example` contient uniquement les noms des variables.
+Ouvrir [l’application locale](http://127.0.0.1:4173/). Le serveur reste sur la boucle locale. Il n’existe aucun compte administrateur par défaut. `.env` configure SQLite/Brevo local ; `.env.supabase.local` (gitignoré) active PostgreSQL Supabase lorsqu’il est présent. Ne jamais partager ni versionner ces fichiers. `.env.example` contient uniquement les noms des variables.
 
 La clé Brevo fournie a été conservée temporairement à la demande de l’utilisateur, dans `.env` uniquement, avec des permissions Windows restreintes. Elle a été publiée dans le chat : **la remplacer avant la production**. Le garde-fou `BREVO_KEY_EXPOSED=true` empêche le démarrage en mode production tant que cette situation n’est pas résolue. Aucune autre clé de boutique n’est utilisée ici.
 
@@ -61,11 +61,14 @@ Cette recette utilise `output/tests/recette-api.sqlite`, désactive toujours les
 | `server/app.cjs` | API, permissions, filtration des données et fichiers publics autorisés |
 | `server/auth.cjs` | Scrypt, sessions, validation des profils et tokens |
 | `server/store.cjs` | SQLite, migrations, transactions, journal et file de notifications |
+| `server/postgres.cjs` | PostgreSQL Supabase, pool TLS et transactions inter-instances |
+| `api/index.js` | Point d’entrée Vercel des mêmes routes API |
+| `supabase/migrations/` | Schéma PostgreSQL privé, sans données fictives |
 | `server/mail.cjs` | Brevo REST, récapitulatifs, états d’envoi et reprises contrôlées |
 | `scripts/` | Démarrage, administration initiale, sauvegarde, restauration et recette |
 | `tests/` | Tests du modèle, de l’API, des e-mails simulés et du XLSX |
 
-Une seule dépendance d’exécution : `better-sqlite3`, version verrouillée dans le lockfile. Pas de compilation frontend : les fichiers HTML/CSS/JS sont servis directement. `app.js` est un ancien prototype conservé mais non chargé et non servi.
+Les dépendances serveur `pg` et `@vercel/functions` sont verrouillées dans le lockfile. `better-sqlite3` est optionnelle pour le mode local ; PGlite sert uniquement aux tests. Pas de compilation frontend : le build Vercel copie les fichiers autorisés dans `public/`. `app.js` est un ancien prototype conservé mais non chargé et non publié.
 
 Les anciennes données locales du prototype sont conservées dans le navigateur, mais ne sont pas importées automatiquement : elles peuvent contenir des comptes et cours fictifs. Une reprise de données réelles demanderait un import contrôlé, après validation de la direction.
 

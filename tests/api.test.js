@@ -95,7 +95,7 @@ test('Brevo : récapitulatif complet, double destinataire, clé serveur, accepta
   const store=new Store(':memory:');t.after(()=>store.close());const id=await A.createUser(store,profile('mail@example.test'));
   const d={id:'d',period:'2026-09',items:[{...BC.templates.find(c=>c.selectable),date:'2026-09-07'}],validatedAt:new Date().toISOString()};
   const cfg={mailMode:'brevo',direction:'boxingcenter31@gmail.com',apiKey:'private',sender:'verified@example.test',senderName:'Boxing Center',replyTo:'boxingcenter31@gmail.com'};
-  store.transaction(()=>M.queueDeclaration(store,d,{...profile('mail@example.test'),id},cfg));assert.equal(store.sql.prepare('SELECT count(*) AS n FROM outbox').get().n,2);
+  await store.transaction(()=>M.queueDeclaration(store,d,{...profile('mail@example.test'),id},cfg));assert.equal(store.sql.prepare('SELECT count(*) AS n FROM outbox').get().n,2);
   await M.dispatch(store,cfg,async(url,options)=>{assert.equal(url,'https://api.brevo.com/v3/smtp/email');assert.equal(options.headers['api-key'],'private');const body=JSON.parse(options.body);assert.match(body.textContent,/Société \/ association/);assert.match(body.textContent,/TOTAL GLOBAL/);assert.match(body.textContent,/Total espace/);return new Response(JSON.stringify({messageId:'accepted-id'}),{status:201})});
   assert.equal(store.sql.prepare("SELECT count(*) AS n FROM outbox WHERE status='accepted'").get().n,1);
 });

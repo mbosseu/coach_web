@@ -18,13 +18,13 @@ function profile(values){const out={};for(const key of ['firstName','lastName','
 }out.email=out.email.toLowerCase();const digits=out.phone.replace(/\D/g,'');if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(out.email)||!/^\+?[\d\s().-]{6,30}$/.test(out.phone)||digits.length<8||digits.length>15)throw fail('Vérifiez l’adresse e-mail et le téléphone.');return out}
 async function createUser(store,values,role='coach',active=true){
   const p=profile(values),encoded=await hash(values.password),id=randomUUID();
-  store.transaction(()=>{if(store.sql.prepare('SELECT id FROM users WHERE email=?').get(p.email))throw fail('Cette adresse est déjà utilisée.');store.sql.prepare('INSERT INTO users(id,email,profile,password,role,active) VALUES(?,?,?,?,?,?)').run(id,p.email,JSON.stringify(p),encoded,role,active?1:0)});return id;
+  (await store.transaction(async()=>{if(role==='admin'&&(await store.profiles()).some(u=>u.role==='admin'))throw fail('Un administrateur existe déjà.');if((await store.sql.prepare('SELECT id FROM users WHERE email=?').get(p.email)))throw fail('Cette adresse est déjà utilisée.');(await store.sql.prepare('INSERT INTO users(id,email,profile,password,role,active) VALUES(?,?,?,?,?,?)').run(id,p.email,JSON.stringify(p),encoded,role,active?1:0))}));return id;
 }
-function session(store,userId=null){const value=token(),csrf=token();store.sql.prepare('INSERT INTO sessions VALUES(?,?,?,?)').run(digest(value),userId,csrf,Date.now()+8*3600000);return{value,csrf,userId}}
-function getSession(store,cookie=''){
+async function session(store,userId=null){const value=token(),csrf=token();(await store.sql.prepare('INSERT INTO sessions VALUES(?,?,?,?)').run(digest(value),userId,csrf,Date.now()+8*3600000));return{value,csrf,userId}}
+async function getSession(store,cookie=''){
   const value=cookie.match(/(?:^|;\s*)bc_session=([A-Za-z0-9_-]{43})(?:;|$)/)?.[1];if(!value)return null;
-  const row=store.sql.prepare('SELECT * FROM sessions WHERE token_hash=? AND expires>?').get(digest(value),Date.now());
-  if(row?.user_id&&!store.sql.prepare('SELECT id FROM users WHERE id=? AND active=1').get(row.user_id))return null;
+  const row=(await store.sql.prepare('SELECT * FROM sessions WHERE token_hash=? AND expires>?').get(digest(value),Date.now()));
+  if(row?.user_id&&!(await store.sql.prepare('SELECT id FROM users WHERE id=? AND active=1').get(row.user_id)))return null;
   return row;
 }
 module.exports={digest,token,fail,password,hash,verify,profile,createUser,session,getSession};

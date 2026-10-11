@@ -11,5 +11,5 @@ function backup(source,directory){
   const sql=new Database(source);try{if(sql.prepare('PRAGMA integrity_check').get().integrity_check!=='ok')throw Error('Intégrité de la base incorrecte.');sql.prepare('VACUUM INTO ?').run(file)}finally{sql.close()}
   fs.chmodSync(file,0o600);const copy=new Database(file,{readonly:true});try{if(copy.prepare('PRAGMA integrity_check').get().integrity_check!=='ok')throw Error('Sauvegarde invalide.')}finally{copy.close()}return file;
 }
-if(require.main===module){try{const cfg=config();console.log('Sauvegarde vérifiée :',backup(cfg.dbPath,cfg.backupDir))}catch(e){console.error(e.message);process.exitCode=1}}
+if(require.main===module){try{const cfg=config();if(cfg.provider==='supabase')throw Error('Utiliser les sauvegardes Supabase ou pg_dump : le script local ne sauvegarde que SQLite.');console.log('Sauvegarde vérifiée :',backup(cfg.dbPath,cfg.backupDir))}catch(e){console.error(e.message);process.exitCode=1}}
 module.exports={backup};

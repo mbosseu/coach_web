@@ -1,5 +1,7 @@
 # Audit et recette Boxing Center — 11 octobre 2026
 
+> Rapport de la version Node/SQLite avant adaptation. La migration Vercel + Supabase est en cours et ses nouveaux tests n’ont pas encore pu être exécutés. État et procédure : [SUPABASE_VERCEL.md](C:/Users/PC/Desktop/coach_web/SUPABASE_VERCEL.md).
+
 ## Conclusion
 
 Le projet n’est plus uniquement une maquette : il dispose maintenant d’une API, d’une base SQLite partagée, d’une authentification serveur, de permissions, d’une file Brevo durable et de sauvegardes. Les parcours coach et direction ont été testés. **La mise en production reste à autoriser et à préparer**, notamment pour la rotation des secrets exposés, la confirmation du calendrier de saison, le bootstrap du véritable administrateur, Node LTS corrigé et l’infrastructure HTTPS.
