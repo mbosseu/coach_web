@@ -27,24 +27,11 @@ body:has(.topbar) .basket-item{color:#36445e}
 body:has(.topbar) .modal-box{background:#fff;color:#101d35;border-color:#dce1eb;box-shadow:0 22px 60px rgba(16,29,53,.24)}
 body:has(.topbar) .modal-box .muted{color:#4c5a71}
 .brand img{width:132px;height:48px;object-fit:contain;object-position:left center}
-.login-brand{margin-bottom:42px}
-.login-brand img{width:190px;height:auto;max-height:96px;object-fit:contain;object-position:left center;margin:0}
-.login-redesign .login-kicker{color:#c5b7ff}
-.login-intro{color:rgba(247,248,252,.82)}
-.field-help{color:rgba(247,248,252,.72)}
-.login-divider{color:rgba(247,248,252,.62)}
-.admin-link{color:rgba(247,248,252,.9)}
-.login-legal{color:rgba(247,248,252,.62)}
-.login-visual-copy{background:transparent;color:#fff;border:0;box-shadow:none}
-.login-visual-copy .login-kicker{color:#ddd3ff;text-shadow:0 2px 10px rgba(5,12,26,.88)}
-.login-visual-copy h1,.login-visual-copy h1 span{color:#fff;text-shadow:0 3px 18px rgba(5,12,26,.95)}
-.login-visual-copy p{color:#fff;text-shadow:0 2px 12px rgba(5,12,26,.95)}
-.login-visual-copy .login-proof{color:#fff;text-shadow:0 2px 10px rgba(5,12,26,.95)}
 .club:after{top:auto;bottom:0;height:44%;background:rgba(255,255,255,.92)}
 .club h3{color:#101d35;font-weight:700}.club p{color:#34425a;font-weight:500}
 .club .tag{background:rgba(255,255,255,.96);color:#3e2e86;border-color:#ddd4fb;box-shadow:0 2px 8px rgba(16,29,53,.08)}
 .hero-content h2,.hero-content p{color:#fff!important;text-shadow:0 2px 14px rgba(5,12,26,.95)}
 .hero-content .eyebrow{color:#fff!important;text-shadow:0 2px 10px rgba(5,12,26,.95)}
-@media(min-width:601px) and (max-width:1000px){body:has(.topbar) .sidebar{width:205px;padding:22px 14px}body:has(.topbar) .sidebar .side-label{font-size:10px}body:has(.topbar) .sidebar .nav button{font-size:13px;padding:11px 12px}body:has(.topbar) .sidebar .nav button:before{display:none}body:has(.topbar) .content{margin-left:205px;width:calc(100% - 205px);padding:26px 24px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.club-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.login-redesign .login-visual{display:flex;min-height:330px}.login-redesign .login-card{min-height:auto;padding:48px 34px}.login-visual-copy{max-width:540px}}
-@media(max-width:600px){.topbar{height:64px}.brand img{width:98px;height:40px}.top-actions .muted{display:none}body:has(.topbar) .shell{display:block}body:has(.topbar) .sidebar{top:64px}.cards{grid-template-columns:1fr}.card{padding:16px}.content{margin-left:0;width:100%;padding:18px 14px}.grid2{gap:14px}.hero{height:310px}.hero-content{left:8px;right:8px;bottom:10px;padding:14px}.hero h2{font-size:24px}.club:after{height:46%}.planning{gap:14px}.table{min-width:720px}.basket-item{gap:16px}.card[style*="justify-content:space-between"]{flex-wrap:wrap;gap:18px}.login-redesign .login-visual{display:flex;min-height:245px}.login-visual-copy{padding:16px 18px;max-width:92%}.login-visual h1{font-size:32px}.login-proof{display:none}.login-redesign .login-card{padding:30px 22px}.login-brand img{width:160px}}
+@media(min-width:601px) and (max-width:1000px){body:has(.topbar) .sidebar{width:205px;padding:22px 14px}body:has(.topbar) .sidebar .side-label{font-size:10px}body:has(.topbar) .sidebar .nav button{font-size:13px;padding:11px 12px}body:has(.topbar) .sidebar .nav button:before{display:none}body:has(.topbar) .content{margin-left:205px;width:calc(100% - 205px);padding:26px 24px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.club-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.topbar{height:64px}.brand img{width:98px;height:40px}.top-actions .muted{display:none}body:has(.topbar) .shell{display:block}body:has(.topbar) .sidebar{top:64px}.cards{grid-template-columns:1fr}.card{padding:16px}.content{margin-left:0;width:100%;padding:18px 14px}.grid2{gap:14px}.hero{height:310px}.hero-content{left:8px;right:8px;bottom:10px;padding:14px}.hero h2{font-size:24px}.club:after{height:46%}.planning{gap:14px}.table{min-width:720px}.basket-item{gap:16px}.card[style*="justify-content:space-between"]{flex-wrap:wrap;gap:18px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
