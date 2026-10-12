@@ -28,7 +28,9 @@ class PostgresStore{
   }
   request(fn){return fn()}
   async query(text,values=[]){const result=await(this.context.getStore()||this.pool).query(text,values);return{...result,rows:(result.rows||[]).map(row=>Object.fromEntries(Object.entries(row).map(([key,value])=>[key,['expires','next_at','sending_at','rowid'].includes(key)&&value!==null?Number(value):value])))} }
-  async ready(){const row=await this.sql.prepare('SELECT id FROM state WHERE id=1').get();if(!row)throw Object.assign(Error('Initialiser la base avec npm run db:migrate.'),{status:503})}
+  async ready(){const row=await this.sql.prepare('SELECT id FROM state WHERE id=1').get();if(!row)throw Object.assign(Error('Initialiser la base avec npm run db:migrate.'),{status:503});
+    const cols=(await this.query('SELECT column_name FROM information_schema.columns WHERE table_schema=$1 AND table_name=$2',['boxing_center','users'])).rows.map(r=>r.column_name);
+    if(!cols.includes('guide_done'))await this.query("ALTER TABLE boxing_center.users ADD COLUMN guide_done integer NOT NULL DEFAULT 0 CHECK(guide_done IN (0,1))");}
   async transaction(fn){
     if(this.context.getStore())return fn();
     const client=await this.pool.connect();
@@ -39,7 +41,7 @@ class PostgresStore{
       const result=await this.context.run(client,fn);await client.query('COMMIT');return result;
     }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
   }
-  async profiles(){return(await this.sql.prepare('SELECT id,role,active,profile FROM users').all()).map(u=>({...JSON.parse(u.profile),id:u.id,role:u.role,active:Boolean(u.active)}))}
+  async profiles(){return(await this.sql.prepare('SELECT id,role,active,guide_done,profile FROM users').all()).map(u=>({...JSON.parse(u.profile),id:u.id,role:u.role,active:Boolean(u.active),guideDone:Boolean(u.guide_done)}))}
   async load(){const row=await this.sql.prepare('SELECT * FROM state WHERE id=1').get();if(!row)throw Object.assign(Error('Base non initialisée.'),{status:503});const db=JSON.parse(row.payload);db.users=await this.profiles();db.audit=(await this.sql.prepare('SELECT payload FROM audit ORDER BY rowid DESC').all()).map(r=>JSON.parse(r.payload));db.revision=row.revision;return db}
   async save(db){
     if(!this.context.getStore())throw Error('Écriture hors transaction interdite.');

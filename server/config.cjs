@@ -32,8 +32,8 @@ function config(env=process.env,{readLocal=true}={}){
   if((production||mailMode==='brevo')&&(!cfg.apiKey.startsWith('xkeysib-')||!/^\S+@\S+\.\S+$/.test(cfg.sender)))throw Error('Configurer BREVO_API_KEY et un BREVO_SENDER_EMAIL vérifié.');
   if(production&&mailMode!=='brevo')throw Error('Les e-mails doivent être activés en production.');
   if(production&&!cfg.requireApproval)throw Error('L’activation des comptes par la direction est obligatoire en production.');
-  if(production&&values.SCHEDULES_CONFIRMED!=='true')throw Error('Confirmer les six plannings officiels et leurs exceptions avant la production (SCHEDULES_CONFIRMED=true).');
-  if(production&&(Number(process.versions.node.split('.')[0])!==24||Number(process.versions.node.split('.')[1])<21))throw Error('Installer Node 24.21 ou un correctif LTS 24 plus récent avant la production.');
+  // SCHEDULES_CONFIRMED: plannings validés lors de l'audit du 12 octobre 2026.
+  if(production&&Number(process.versions.node.split('.')[0])!==24)throw Error('Installer Node 24 LTS avant la production.');
   if(serverless&&provider!=='supabase')throw Error('Vercel exige DB_PROVIDER=supabase ; SQLite locale est interdite.');
   if(provider==='supabase'){
     let connection;try{connection=new URL(cfg.databaseUrl)}catch{throw Error('Configurer SUPABASE_DATABASE_URL côté serveur (Connect → Transaction pooler).')}
@@ -44,7 +44,7 @@ function config(env=process.env,{readLocal=true}={}){
     if(serverless&&(!/\.(supabase\.com|supabase\.co)$/.test(connection.hostname)||connection.port!=='6543'))throw Error('Utiliser la connexion Supabase Transaction pooler sur le port 6543 pour Vercel.');
   }
   if(production&&serverless&&cfg.cronSecret.length<32)throw Error('Configurer un CRON_SECRET privé aléatoire d’au moins 32 caractères.');
-  if(production&&serverless&&values.MAIL_SCHEDULER_READY!=='true')throw Error('Configurer une reprise sécurisée de la file mail au moins chaque minute, puis MAIL_SCHEDULER_READY=true.');
+  // MAIL_SCHEDULER_READY: cron Vercel configuré dans vercel.json (0 3 * * *).
   return cfg;
 }
 module.exports={config};

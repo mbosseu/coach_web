@@ -26,6 +26,7 @@ class Store{
       INSERT OR IGNORE INTO migrations VALUES(1,strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
     if(!this.sql.prepare('PRAGMA table_info(outbox)').all().some(c=>c.name==='expires'))this.sql.exec("ALTER TABLE outbox ADD COLUMN expires INTEGER; INSERT OR IGNORE INTO migrations VALUES(2,strftime('%Y-%m-%dT%H:%M:%fZ','now'));");
     if(!this.sql.prepare('PRAGMA table_info(outbox)').all().some(c=>c.name==='sending_at'))this.sql.exec('ALTER TABLE outbox ADD COLUMN sending_at INTEGER');
+    if(!this.sql.prepare('PRAGMA table_info(users)').all().some(c=>c.name==='guide_done'))this.sql.exec('ALTER TABLE users ADD COLUMN guide_done INTEGER NOT NULL DEFAULT 0');
     if(!this.sql.prepare('SELECT id FROM state').get()){
       const db=BC.createDB();db.users=[];delete db.credentials;
       this.sql.prepare('INSERT INTO state(id,payload) VALUES(1,?)').run(JSON.stringify(db));
@@ -34,7 +35,7 @@ class Store{
     this.sql.exec("UPDATE outbox SET status='uncertain',last_error='Envoi interrompu : vérifier le journal Brevo avant toute reprise.' WHERE status='sending'");
   }
   transaction(fn){return this.request(async()=>{this.sql.exec('BEGIN IMMEDIATE');try{const result=await fn();this.sql.exec('COMMIT');return result}catch(e){this.sql.exec('ROLLBACK');throw e}})}
-  profiles(){return this.sql.prepare('SELECT id,role,active,profile FROM users').all().map(u=>({...JSON.parse(u.profile),id:u.id,role:u.role,active:Boolean(u.active)}))}
+  profiles(){return this.sql.prepare('SELECT id,role,active,guide_done,profile FROM users').all().map(u=>({...JSON.parse(u.profile),id:u.id,role:u.role,active:Boolean(u.active),guideDone:Boolean(u.guide_done)}))}
   load(){const row=this.sql.prepare('SELECT * FROM state WHERE id=1').get();const db=JSON.parse(row.payload);db.users=this.profiles();db.audit=this.sql.prepare('SELECT payload FROM audit ORDER BY rowid DESC').all().map(r=>JSON.parse(r.payload));db.revision=row.revision;return db}
   save(db){
     for(const entry of db.audit)this.sql.prepare('INSERT OR IGNORE INTO audit VALUES(?,?)').run(entry.id,JSON.stringify(entry));

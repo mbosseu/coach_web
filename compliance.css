@@ -126,3 +126,52 @@ body:has(.topbar) .btn:disabled {opacity:1;background:#edf0f5;color:#516078;bord
 .top-context>span,.top-context>b,.profile-label small,.activity-list small {color:#526078;}
 body:has(.topbar) .form-group label {color:#304059;}
 body:has(.topbar) .pill {color:#126a4c;}
+/* Mobile planning: day tabs + single day view */
+.mobile-planning{display:none}
+.day-tabs{display:flex;gap:4px;overflow-x:auto;padding:0 0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.day-tabs::-webkit-scrollbar{display:none}
+.day-tab{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:48px;padding:8px 6px;border:1px solid #dce2eb;border-radius:10px;background:#fff;color:#46546c;font-size:11px;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,color .15s;flex-shrink:0;position:relative}
+.day-tab span{font-size:16px;font-weight:700;color:#182640}
+.day-tab i{position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:#8060ce;color:#fff;font-size:9px;font-style:normal;font-weight:700;display:grid;place-items:center}
+.day-tab.active{background:#101d35;border-color:#101d35;color:#c4d0e4}
+.day-tab.active span{color:#fff}
+.day-tab.active i{background:#a78bfa}
+.mobile-day-header{display:flex;justify-content:space-between;align-items:center;padding:10px 0;color:#182640}
+.mobile-day-header strong{font-size:15px;text-transform:capitalize}
+.mobile-day-header span{font-size:12px;color:#53617a;font-weight:600}
+.mobile-day-courses{display:flex;flex-direction:column;gap:10px;min-height:200px;touch-action:pan-y}
+.no-course-mobile{text-align:center;color:#6a778d;font-size:13px;padding:40px 0}
+@media(max-width:600px){
+  .desktop-agenda{display:none!important}
+  .mobile-planning{display:block}
+}
+/* Tour spotlight */
+#tour-layer{display:none;position:fixed;inset:0;z-index:900;pointer-events:none}
+#tour-layer.tour-active{display:block}
+.tour-backdrop{position:fixed;inset:0;background:rgba(16,29,53,.55);pointer-events:auto;transition:opacity .25s}
+.tour-spot{position:absolute;box-shadow:0 0 0 9999px rgba(16,29,53,.55);pointer-events:none;transition:top .3s,left .3s,width .3s,height .3s;display:none;z-index:901}
+.tour-tooltip{position:absolute;background:#fff;border-radius:14px;padding:20px 22px 18px;box-shadow:0 12px 40px rgba(16,29,53,.25);color:#182640;max-width:340px;width:calc(100vw - 32px);pointer-events:auto;z-index:902;animation:tour-in .25s ease}
+@keyframes tour-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.tour-arrow{position:absolute;width:14px;height:14px;background:#fff;transform:rotate(45deg);z-index:-1}
+.tour-arrow-top{top:-7px}
+.tour-arrow-bottom{bottom:-7px}
+.tour-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.tour-counter{font-size:12px;font-weight:700;color:#8060ce}
+.tour-close{width:30px;height:30px;border:none;background:transparent;font-size:20px;color:#53617a;cursor:pointer;border-radius:6px;display:grid;place-items:center}
+.tour-close:hover{background:#f0f2f6;color:#101d35}
+.tour-progress{height:3px;background:#e2e6ee;border-radius:2px;margin-bottom:14px;overflow:hidden}
+.tour-progress-fill{height:100%;background:linear-gradient(90deg,#8060ce,#a78bfa);border-radius:2px;transition:width .3s}
+.tour-title{font-size:17px;margin:0 0 6px;color:#101d35;font-weight:700}
+.tour-text{font-size:14px;line-height:1.6;color:#4c5b73;margin:0 0 16px}
+.tour-nav{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tour-btn{min-height:38px;padding:0 16px;border-radius:9px;font-size:13px;font-weight:600;border:1px solid #dce2eb;background:#fff;color:#46546c;cursor:pointer;transition:background .15s}
+.tour-btn:hover{background:#f4f6fa}
+.tour-btn-primary{background:#101d35;border-color:#101d35;color:#fff}
+.tour-btn-primary:hover{background:#233853}
+.tour-btn-finish{background:#126a4c;border-color:#126a4c;color:#fff}
+.tour-btn-finish:hover{background:#0e5a3f}
+.tour-skip{border:none;background:transparent;color:#7a8aa1;font-size:12px;cursor:pointer;text-decoration:underline}
+.tour-fab{position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:#101d35;color:#fff;font-size:22px;font-weight:700;border:none;box-shadow:0 4px 16px rgba(16,29,53,.3);cursor:pointer;z-index:50;transition:transform .15s,background .15s}
+.tour-fab:hover{background:#233853;transform:scale(1.08)}
+body:has(.topbar) .agenda-lesson.drag-highlight{background:#e8e0ff!important;border-color:#8060ce;outline:2px dashed #8060ce;outline-offset:-1px}
+@media print{.tour-fab,#tour-layer{display:none!important}}

@@ -25,7 +25,7 @@ async function filtered(store,id,cfg,csrf){
     for(const type of ['drafts','baskets'])db[type]=Object.fromEntries(Object.entries(db[type]).filter(([key])=>key.startsWith(id+':')));
     db.audit=[];db.exportLog=[];
   }
-  return{db,userId:id,csrf,mailEnabled:cfg.mailMode==='brevo',serverDate:BC.dateKey(today())};
+  return{db,userId:id,csrf,mailEnabled:cfg.mailMode==='brevo',serverDate:BC.dateKey(today()),guideDone:u.guideDone};
 }
 async function body(req){
   if(!/^application\/json(?:;|$)/i.test(req.headers['content-type']||''))throw A.fail('JSON requis.',415);
@@ -89,7 +89,7 @@ function createApp(cfg,{store,fetcher=fetch,background=!cfg.serverless,defer}={}
           const encoded=row?.password||'scrypt:65536:8:2:dummy-salt-for-timing:'+ '0'.repeat(128);
           const valid=await A.verify(v.password,encoded);
           if(!valid||!row||row.role!==v.role)throw A.fail('Adresse e-mail ou mot de passe incorrect.',401);
-          if(!row.active)throw A.fail('Vos identifiants sont corrects, mais votre compte n’est pas actif. Après inscription, la direction doit activer votre accès. Si votre compte a été suspendu, contactez la direction.',401);
+          if(!row.active)throw A.fail("Vos identifiants sont corrects, mais votre compte n’est pas encore actif. Après inscription, la direction doit activer votre accès.",401);
           const next=(await store.transaction(async()=>{const live=(await store.sql.prepare('SELECT password,active FROM users WHERE id=?').get(row.id));if(!live?.active||live.password!==row.password)throw A.fail('Compte modifié : reconnectez-vous.',401);(await store.sql.prepare('DELETE FROM sessions WHERE token_hash=?').run(s.token_hash));return (await A.session(store,row.id))}));cookie(res,next.value);return json(res,(await snapshot(row.id,next.csrf)));
         }
         if(route==='/api/register'){
@@ -124,6 +124,9 @@ function createApp(cfg,{store,fetcher=fetch,background=!cfg.serverless,defer}={}
         let me=(await store.sql.prepare('SELECT * FROM users WHERE id=? AND active=1').get(s.user_id));if(!me)throw A.fail('Compte indisponible.',401);
         if(route==='/api/logout'){
           (await store.sql.prepare('DELETE FROM sessions WHERE token_hash=?').run(s.token_hash));res.setHeader('Set-Cookie',`bc_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${cfg.production?'; Secure':''}`);return json(res,{ok:true});
+        }
+        if(route==='/api/guide-done'){
+          (await store.sql.prepare('UPDATE users SET guide_done=1 WHERE id=?').run(me.id));return json(res,(await snapshot(me.id,s.csrf)));
         }
         if(route==='/api/profile'){
           const p=A.profile(v);if(p.email!==me.email&&!await A.verify(v.currentPassword,me.password))throw A.fail('Confirmez votre mot de passe pour modifier l’adresse e-mail.');
