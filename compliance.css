@@ -175,3 +175,188 @@ body:has(.topbar) .pill {color:#126a4c;}
 .tour-fab:hover{background:#233853;transform:scale(1.08)}
 body:has(.topbar) .agenda-lesson.drag-highlight{background:#e8e0ff!important;border-color:#8060ce;outline:2px dashed #8060ce;outline-offset:-1px}
 @media print{.tour-fab,#tour-layer{display:none!important}}
+
+/* ═══════════════════════════════════════════════════════════
+   UI/UX Audit – Corrections globales (Coach + Direction)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 1. Minimum 12px pour tout texte lisible (WCAG AA) ── */
+.app-sidebar-caption{font-size:12px!important;letter-spacing:.08em}
+body:has(.topbar) .app-nav-label{font-size:11px!important}
+.app-sidebar-note{font-size:11px!important}
+.app-account-identity .avatar{font-size:12px!important}
+.app-account-identity span{font-size:12px!important}
+body:has(.topbar) .agenda-lesson small{font-size:11px!important}
+.lesson-time{font-size:12px!important}
+.course-state{font-size:11px!important}
+.no-course{font-size:12px!important}
+.agenda-date>span{font-size:12px!important;letter-spacing:.06em}
+.course-legend{font-size:11px!important}
+.source-note{font-size:12px!important}
+.check-row b{font-size:12px!important}
+.check-row i{font-size:11px!important}
+.info-list span{font-size:12px!important}
+.sidebar-footer{font-size:11px!important}
+.table small{font-size:12px!important}
+body:has(.topbar) .eyebrow{font-size:12px!important;letter-spacing:.1em}
+.prototype-label{font-size:12px!important}
+.day-tab{font-size:12px!important}
+.day-tab i{font-size:10px!important}
+.profile-label small{font-size:12px!important}
+.activity-list small{font-size:12px!important}
+.pill{font-size:12px!important}
+.top-context{font-size:13px!important}
+
+/* ── 2. Touch targets: min 44px (WCAG 2.5.5) ── */
+.week-controls button{min-width:44px!important;min-height:44px!important;border-radius:9px}
+.venue-card .btn{min-height:44px!important}
+.security-panel .btn{min-height:44px}
+.validation-action .btn{min-height:48px!important;font-size:14px}
+body:has(.topbar) .select{min-height:44px}
+
+/* ── 3. Contraste renforcé (ratio ≥ 4.5:1 sur fond blanc) ── */
+.metric-label{color:#4a5568!important}
+.page-heading .eyebrow{color:#5b47a0!important}
+body:has(.topbar) .muted{color:#4a5568!important}
+.top-context>span{color:#4a5568!important}
+.top-context>b{color:#9ca3af!important}
+.agenda-date>span{color:#4a5568!important}
+.no-course{color:#4a5568!important}
+.course-legend{color:#4a5568!important}
+.source-note{color:#4a5568!important}
+.info-list span{color:#4a5568!important;font-weight:600}
+.activity-list small{color:#5a667b!important}
+.check-row i{color:#b5c1d6!important}
+
+/* ── 4. Hiérarchie typographique cohérente ── */
+body:has(.topbar) h1{font-weight:700;letter-spacing:-.03em}
+body:has(.topbar) h2{font-weight:700}
+.dashboard-head h1{line-height:1.15}
+.summary h2{font-size:18px!important;font-weight:700}
+.panel-heading h2{font-weight:700}
+
+/* ── 5. Espacement et alignement ── */
+.page-heading{margin-bottom:28px}
+.page-heading p{color:#4a5568}
+.metric-cards{gap:16px!important}
+.metric-card{border-radius:14px;border:1px solid #e8ecf2}
+.metric-card:hover{border-color:#d0d5e0;box-shadow:0 8px 24px rgba(16,29,53,.06)}
+.panel{border-radius:14px}
+.venue-card{border-radius:14px;transition:border-color .16s,box-shadow .16s}
+.venue-card:hover{box-shadow:0 8px 24px rgba(16,29,53,.06)}
+.basket-group{border-bottom:1px solid #e8ecf2}
+.period-filters{border-radius:14px}
+.agenda-scroll{border-radius:12px}
+.agenda-courses{gap:10px;padding:12px}
+
+/* ── 6. Cards de clubs: images et espacement ── */
+.venue-card>img{height:160px;object-fit:cover;border-bottom:1px solid #eef0f4}
+.venue-card>div{padding:18px;gap:6px}
+.venue-card h3{font-size:16px;font-weight:700;color:#182640}
+.venue-card p{font-size:13px!important;color:#4a5568;margin:6px 0 16px}
+
+/* ── 7. Agenda / planning: lisibilité des cours ── */
+body:has(.topbar) .agenda-lesson{padding:12px 10px;gap:5px;border-radius:8px}
+body:has(.topbar) .agenda-lesson strong{font-size:13px!important}
+.discipline{padding-top:6px;margin-top:2px}
+.course-state{padding-top:6px;margin-top:2px;line-height:1.45}
+
+/* ── 8. Summary / récapitulatif ── */
+.summary{border-radius:14px}
+.summary-row{padding:12px 0;font-size:14px}
+.summary-total{margin:18px 0 12px}
+.summary .btn{font-size:13px!important;font-weight:700}
+.duration-counts .summary-row{font-size:13px}
+
+/* ── 9. Panier et tableau ── */
+.table-wrap{border-radius:12px!important;border:1px solid #e3e8f0}
+body:has(.topbar) .table th{font-size:12px!important;padding:14px 16px;letter-spacing:.06em}
+body:has(.topbar) .table td{font-size:13px;padding:14px 16px}
+.count-chips{font-size:13px!important}
+.count-chips span{padding:8px 12px;border-radius:8px}
+.global-summary h2{font-weight:700}
+
+/* ── 10. Profil: formulaire et mise en page ── */
+.profile-avatar{border:3px solid #e2e6ee}
+.profile-summary>p{font-size:13px;color:#4a5568}
+.info-list>div{padding:16px 0}
+.form-grid label{font-size:13px!important}
+.form-grid .input,.form-grid .select{min-height:46px;font-size:14px;border-radius:10px}
+.security-panel{padding:20px;background:#f8fafc;border:1px solid #e3e8ef;border-radius:14px}
+.security-panel p{font-size:13px;color:#4a5568}
+
+/* ── 11. Empty states: meilleur visuel ── */
+.empty{padding:48px 24px!important;text-align:center}
+.empty strong{font-size:18px!important;color:#26354f}
+.empty span{font-size:14px!important;color:#4a5568;line-height:1.55}
+
+/* ── 12. Exports ── */
+.export-card{border-radius:14px;padding:24px}
+.export-card h2{font-size:18px}
+.export-card p{font-size:13px;line-height:1.6}
+.file-type{font-size:12px!important}
+
+/* ── 13. Audit log ── */
+.audit-list article{padding:22px 0}
+.audit-list small{font-size:12px!important;color:#5a667b!important}
+.audit-list p{font-size:14px!important}
+.audit-values pre{font-size:12px!important;border-radius:10px}
+
+/* ── 14. Notifications ── */
+.delivery-list p{font-size:14px!important}
+.email-state p{font-size:13px!important}
+
+/* ── 15. Modales ── */
+.compliance-dialog{border-radius:18px}
+.compliance-dialog label{font-size:13px!important}
+.compliance-dialog .input,.compliance-dialog .select{min-height:46px}
+.compliance-dialog p{font-size:14px!important}
+
+/* ── 16. Toast amélioré ── */
+.toast{border-radius:12px;font-size:14px!important;padding:14px 18px}
+
+/* ── 17. Navigation sidebar: espacement et lisibilité ── */
+.app-nav-link{font-size:14px!important;border-radius:10px}
+.app-nav-link svg{width:20px;height:20px;flex:0 0 20px}
+.app-nav{gap:26px}
+.app-nav ul{gap:5px}
+
+/* ── 18. Boutons: cohérence de style ── */
+body:has(.topbar) .btn{border-radius:10px;font-size:13px;min-height:44px;padding:11px 18px}
+body:has(.topbar) .btn.primary{font-weight:700;letter-spacing:.01em}
+body:has(.topbar) .btn.primary:active{transform:translateY(1px)}
+body:has(.topbar) .btn.small{min-height:36px;padding:8px 12px;font-size:12px}
+
+/* ── Password toggle: assurer taille minimum tactile ── */
+.password-toggle{min-height:38px!important;padding:0 14px!important;font-size:13px!important}
+
+/* ── 19. Focus visible amélioré ── */
+body:has(.topbar) .btn:focus-visible,
+body:has(.topbar) button:focus-visible,
+body:has(.topbar) .select:focus-visible,
+body:has(.topbar) .input:focus-visible,
+body:has(.topbar) a:focus-visible{outline:3px solid #7c5cc4;outline-offset:3px;border-radius:8px}
+
+/* ── 20. Checklist dans le module déclaration ── */
+.checklist-title{font-size:13px!important}
+.check-row{font-size:13px!important}
+.check-row span{font-size:13px!important;line-height:1.4}
+
+/* ── 21. Status chip et pill ── */
+.status-chip{font-size:13px!important;border-radius:10px}
+
+/* ── 22. Responsive ajustements ── */
+@media(max-width:1024px){
+  .app-nav-link{font-size:14px!important}
+}
+@media(max-width:600px){
+  body:has(.topbar) .btn{min-height:44px;font-size:13px}
+  .metric-label{font-size:12px!important}
+  .metric-card .muted{font-size:12px!important}
+  .venue-card>img{height:140px}
+  .summary-row{font-size:13px}
+  body:has(.topbar) .agenda-lesson strong{font-size:12px!important}
+  body:has(.topbar) .agenda-lesson small{font-size:11px!important}
+  .day-tab span{font-size:15px}
+  .app-nav-link{font-size:13px!important}
+}
