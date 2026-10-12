@@ -88,3 +88,29 @@ test('PostgreSQL : activation, profil, récupération, révocation et CRUD direc
   assert.equal((await coach.request('state')).status,401);
   assert.ok((await f.store.load()).audit.length>=5);
 });
+
+test('Récupération : compte en attente, sans activation implicite ni fausse promesse d’envoi',async t=>{
+  const f=await pgFixture();t.after(()=>f.close());
+  const cfg={root:path.resolve(__dirname,'..'),origin:'http://127.0.0.1',production:false,serverless:true,mailMode:'brevo',requireApproval:true,direction:'direction@example.test'};
+  const app=createApp(cfg,{store:f.store,background:false});await listen(t,app.handler,cfg);
+  const c=client(cfg),p=profile('pending-reset@example.test');await c.request('session');
+  assert.equal((await c.request('register',p)).status,201);
+  const pending=await c.request('login',{email:p.email,password:p.password,role:'coach'});
+  assert.equal(pending.status,401);assert.match(pending.body.error,/identifiants sont corrects.*direction/);
+  const incorrect=await c.request('login',{email:p.email,password:'Mot-de-passe-incorrect',role:'coach'});
+  assert.equal(incorrect.body.error,'Adresse e-mail ou mot de passe incorrect.');
+  const known=await c.request('reset/request',{email:p.email});
+  const unknown=await c.request('reset/request',{email:'unknown@example.test'});
+  assert.equal(known.status,202);assert.deepEqual(known.body,unknown.body);
+  const row=await f.store.sql.prepare('SELECT payload FROM outbox WHERE decl_id IS NULL').get();
+  const token=JSON.parse(row.payload).textContent.match(/#reset\/([\w-]+)/)[1];
+  const password='Recuperation-En-Attente-2026!';
+  assert.equal((await c.request('reset/confirm',{token,password,confirmation:password})).status,200);
+  assert.equal((await f.store.sql.prepare('SELECT active FROM users WHERE email=?').get(p.email)).active,0);
+  await c.request('session');
+  const afterReset=await c.request('login',{email:p.email,password,role:'coach'});
+  assert.equal(afterReset.status,401);assert.match(afterReset.body.error,/compte n’est pas actif/);
+  cfg.mailMode='disabled';
+  const unavailable=await c.request('reset/request',{email:p.email});
+  assert.equal(unavailable.status,503);assert.match(unavailable.body.error,/aucune demande d’envoi/);
+});

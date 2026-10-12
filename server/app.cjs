@@ -88,7 +88,8 @@ function createApp(cfg,{store,fetcher=fetch,background=!cfg.serverless,defer}={}
           // Same expensive derivation for an unknown address; no account enumeration.
           const encoded=row?.password||'scrypt:65536:8:2:dummy-salt-for-timing:'+ '0'.repeat(128);
           const valid=await A.verify(v.password,encoded);
-          if(!valid||!row?.active||row.role!==v.role)throw A.fail('Adresse e-mail ou mot de passe incorrect.',401);
+          if(!valid||!row||row.role!==v.role)throw A.fail('Adresse e-mail ou mot de passe incorrect.',401);
+          if(!row.active)throw A.fail('Vos identifiants sont corrects, mais votre compte n’est pas actif. Après inscription, la direction doit activer votre accès. Si votre compte a été suspendu, contactez la direction.',401);
           const next=(await store.transaction(async()=>{const live=(await store.sql.prepare('SELECT password,active FROM users WHERE id=?').get(row.id));if(!live?.active||live.password!==row.password)throw A.fail('Compte modifié : reconnectez-vous.',401);(await store.sql.prepare('DELETE FROM sessions WHERE token_hash=?').run(s.token_hash));return (await A.session(store,row.id))}));cookie(res,next.value);return json(res,(await snapshot(row.id,next.csrf)));
         }
         if(route==='/api/register'){
@@ -98,16 +99,19 @@ function createApp(cfg,{store,fetcher=fetch,background=!cfg.serverless,defer}={}
         }
         if(route==='/api/reset/request'){
           (await rate('reset',5));const email=string(v.email,'Adresse e-mail').toLowerCase();
-          const row=(await store.sql.prepare('SELECT * FROM users WHERE email=? AND active=1').get(email));
-          if(row&&cfg.mailMode==='brevo')(await store.transaction(async()=>{
-            const live=await store.sql.prepare('SELECT email,active FROM users WHERE id=?').get(row.id);if(!live?.active||live.email!==email)return;
+          if(cfg.mailMode!=='brevo')throw A.fail('La récupération par e-mail est indisponible. Contactez la direction ; aucune demande d’envoi n’a été enregistrée.',503);
+          // Recovering a password must not activate a pending or suspended user.
+          // Those users still own their address and can legitimately forget it.
+          const row=(await store.sql.prepare('SELECT * FROM users WHERE email=?').get(email));
+          if(row)(await store.transaction(async()=>{
+            const live=await store.sql.prepare('SELECT email FROM users WHERE id=?').get(row.id);if(!live||live.email!==email)return;
             const value=A.token();(await store.sql.prepare('DELETE FROM resets WHERE user_id=?').run(row.id));
             (await store.sql.prepare("UPDATE outbox SET status='cancelled',payload='{}' WHERE decl_id IS NULL AND owner_id=? AND status IN ('pending','retry')").run(row.id));
             (await store.sql.prepare('INSERT INTO resets VALUES(?,?,?)').run(A.digest(value),row.id,Date.now()+30*60000));
             (await store.queue(randomUUID(),null,row.id,row.email,message('Réinitialisation Boxing Center',`Seul le dernier lien demandé reste valable. Il expire dans 30 minutes et ne peut être utilisé qu’une fois.\n${cfg.origin}/#reset/${value}\nSi vous n’avez pas demandé cette opération, ignorez ce message.`),Date.now()+30*60000));
           }));
           needsMail=Boolean(row&&cfg.mailMode==='brevo');
-          return json(res,{message:'Si cette adresse correspond à un compte, un lien de réinitialisation sera envoyé.'},202);
+          return json(res,{message:'Demande reçue. Si cette adresse correspond à un compte, un lien valable 30 minutes sera envoyé. Vérifiez aussi les indésirables. Changer le mot de passe n’active pas un compte en attente ou suspendu.'},202);
         }
         if(route==='/api/reset/confirm'){
           (await rate('reset-confirm'));if(v.password!==v.confirmation)throw A.fail('Les mots de passe ne correspondent pas.');

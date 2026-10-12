@@ -39,6 +39,19 @@ test('panier multi-clubs conserve chaque espace et chaque date',()=>{
 test('doublon bloqué dès le panier, disponibilité restaurée après retrait',()=>{
  const db=B.createDB(),c=pick(db);B.toggle(db,c.id,'coach-sophie',period,today);B.addClub(db,'coach-sophie',period,c.target,today);assert.throws(()=>B.toggle(db,c.id,'coach-valentin',period,today));B.removeBasket(db,'coach-sophie',period,c.id);assert.equal(B.available(db,c,'coach-valentin',period,today),true);
 });
+test('brouillon concurrent : désélection et validation restent possibles',()=>{
+ const db=B.createDB(),list=B.courses(db,'minimes',period).filter(c=>c.selectable),a=list[0],b=list[1];
+ B.toggle(db,a.id,'coach-sophie',period,today);B.toggle(db,a.id,'coach-valentin',period,today);B.toggle(db,b.id,'coach-sophie',period,today);
+ B.addClub(db,'coach-valentin',period,a.target,today);
+ assert.equal(B.selected(db,'coach-sophie',period).some(c=>c.id===a.id),false);
+ // Stale draft after a race: clearing must still work, then validation of remaining basket.
+ db.drafts['coach-sophie:'+period]=[a.id,b.id];
+ B.toggle(db,a.id,'coach-sophie',period,today);
+ assert.equal(B.selected(db,'coach-sophie',period).some(c=>c.id===a.id),false);
+ B.addClub(db,'coach-sophie',period,b.target,today);
+ const d=B.validate(db,'coach-sophie',period,today);
+ assert.equal(d.items.length,1);assert.equal(d.items[0].id,b.id);
+});
 test('validation enregistrée, horodatée et immuable pour le coach',()=>{
  const db=B.createDB(),c=pick(db);B.toggle(db,c.id,'coach-sophie',period,today);B.addClub(db,'coach-sophie',period,c.target,today);const d=B.validate(db,'coach-sophie',period,today);
  assert.equal(d.items.length,1);assert.ok(d.validatedAt);assert.equal(d.delivery,'not-connected');assert.equal(db.assignments[c.id].status,'validated');assert.equal(B.finalized(db,'coach-sophie',period).id,d.id);assert.throws(()=>B.toggle(db,c.id,'coach-sophie',period,today));assert.throws(()=>B.removeBasket(db,'coach-sophie',period,c.id));assert.throws(()=>B.validate(db,'coach-sophie',period,today));

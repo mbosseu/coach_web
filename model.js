@@ -42,13 +42,19 @@
   function selected(db,user,period,target){return (db.drafts[key(user,period)]||[]).map(id=>getCourse(db,id)).filter(c=>c&&(!target||c.target===target))}
   function basket(db,user,period){return (db.baskets[key(user,period)]||[]).map(id=>getCourse(db,id)).filter(c=>c&&db.assignments[c.id]?.coachId===user&&db.assignments[c.id]?.status==='reserved')}
   function toggle(db,id,user,period,today=new Date()){
+    const k=key(user,period),list=db.drafts[k]||[];
+    // Always allow clearing a draft item, even if another coach just reserved it.
+    if(list.includes(id)){db.drafts[k]=list.filter(x=>x!==id);return}
     const c=getCourse(db,id);if(!available(db,c,user,period,today))throw Error('Ce cours ne peut pas être sélectionné. Vérifiez sa période et son attribution.');
-    const k=key(user,period),list=db.drafts[k]||[];db.drafts[k]=list.includes(id)?list.filter(x=>x!==id):[...list,id];
+    db.drafts[k]=[...list,id];
   }
   function addClub(db,user,period,target,today=new Date()){
     const list=selected(db,user,period,target);if(!list.length)throw Error('Sélectionnez au moins un cours pour cet espace.');
     if(list.some(c=>!available(db,c,user,period,today)))throw Error('Un cours n’est plus disponible. Actualisez votre sélection.');
-    const k=key(user,period);for(const c of list)db.assignments[c.id]={coachId:user,status:'reserved',updatedAt:now()};
+    const k=key(user,period);for(const c of list){
+      db.assignments[c.id]={coachId:user,status:'reserved',updatedAt:now()};
+      for(const [draftKey,ids] of Object.entries(db.drafts))if(draftKey!==k)db.drafts[draftKey]=ids.filter(id=>id!==c.id);
+    }
     db.baskets[k]=[...new Set([...(db.baskets[k]||[]),...list.map(c=>c.id)])];db.drafts[k]=(db.drafts[k]||[]).filter(id=>!list.some(c=>c.id===id));return list.length;
   }
   function removeBasket(db,user,period,id){
@@ -57,10 +63,13 @@
   }
   function validate(db,user,period,today=new Date()){
     if(!opened(period,today)||finalized(db,user,period))throw Error('Cette période est verrouillée.');
+    const k=key(user,period);
+    // Drop draft items that became unavailable so a lost race cannot trap the coach.
+    db.drafts[k]=(db.drafts[k]||[]).filter(id=>{const c=getCourse(db,id);return c&&available(db,c,user,period,today)});
     if(selected(db,user,period).length)throw Error('Validez d’abord les sélections de chaque club.');
-    const ids=db.baskets[key(user,period)]||[],list=basket(db,user,period);if(!list.length||list.length!==ids.length)throw Error('Le panier est vide ou une attribution a changé. Vérifiez-le avant de valider.');
+    const ids=db.baskets[k]||[],list=basket(db,user,period);if(!list.length||list.length!==ids.length)throw Error('Le panier est vide ou une attribution a changé. Vérifiez-le avant de valider.');
     const decl={id:uid('declaration'),coachId:user,period,items:list.map(c=>({...c})),validatedAt:now(),delivery:'not-connected'};
-    db.declarations.push(decl);for(const c of list)db.assignments[c.id]={coachId:user,status:'validated',declId:decl.id,updatedAt:decl.validatedAt};db.baskets[key(user,period)]=[];db.drafts[key(user,period)]=[];return decl;
+    db.declarations.push(decl);for(const c of list)db.assignments[c.id]={coachId:user,status:'validated',declId:decl.id,updatedAt:decl.validatedAt};db.baskets[k]=[];db.drafts[k]=[];return decl;
   }
   function totals(list){const values={40:0,60:0,80:0,90:0};for(const c of list){const d=duration(c);values[d]=(values[d]||0)+1}return Object.entries(values).sort((a,b)=>Number(a[0])-Number(b[0])).map(([minutes,count])=>({minutes:Number(minutes),count}));}
   function syncDeclaration(db,id,course,assignment){

@@ -26,5 +26,12 @@
       ['xl/worksheets/sheet1.xml',sheet]
     ]);
   }
-  const api={xlsx};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.BCExport=api;
+  // All export formats use the same identity recorded at final validation.
+  // Unattached administrator assignments fall back to the current profile.
+  function ownerForCourse(db,course,coachId){
+    const assignment=db.assignments[course.id];
+    const declaration=db.declarations.find(d=>d.id===assignment?.declId);
+    return declaration?.coachSnapshot||db.users.find(u=>u.id===(declaration?.coachId||coachId||assignment?.coachId));
+  }
+  const api={xlsx,ownerForCourse};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.BCExport=api;
 })(typeof window==='undefined'?globalThis:window);
