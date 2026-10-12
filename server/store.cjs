@@ -32,7 +32,7 @@ class Store{
       this.sql.prepare('INSERT INTO state(id,payload) VALUES(1,?)').run(JSON.stringify(db));
     }
     // A crash after dispatch has an ambiguous outcome; never automatically duplicate it.
-    this.sql.exec("UPDATE outbox SET status='uncertain',last_error='Envoi interrompu : vérifier le journal Brevo avant toute reprise.' WHERE status='sending'");
+    this.sql.exec("UPDATE outbox SET status='uncertain',last_error='Envoi interrompu : vérifier le journal d''envoi avant toute reprise.' WHERE status='sending'");
   }
   transaction(fn){return this.request(async()=>{this.sql.exec('BEGIN IMMEDIATE');try{const result=await fn();this.sql.exec('COMMIT');return result}catch(e){this.sql.exec('ROLLBACK');throw e}})}
   profiles(){return this.sql.prepare('SELECT id,role,active,guide_done,profile FROM users').all().map(u=>({...JSON.parse(u.profile),id:u.id,role:u.role,active:Boolean(u.active),guideDone:Boolean(u.guide_done)}))}

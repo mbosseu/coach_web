@@ -178,7 +178,7 @@ function createApp(cfg,{store,fetcher=fetch,background=!cfg.serverless,defer}={}
             }
             else if(v.action==='retryMail'){
               const row=(await store.sql.prepare('SELECT id,status,expires FROM outbox WHERE id=?').get(string(v.id,'Notification')));
-              if(cfg.mailMode!=='brevo'||!row||!['failed','uncertain'].includes(row.status)||row.expires&&row.expires<Date.now()||v.verified!==true)throw A.fail('Vérifiez la configuration et l’absence d’envoi dans Brevo avant la reprise.');
+              if(cfg.mailMode!=='brevo'||!row||!['failed','uncertain'].includes(row.status)||row.expires&&row.expires<Date.now()||v.verified!==true)throw A.fail('Vérifiez la configuration et l’absence d’envoi avant la reprise.');
               const reason=string(v.reason,'Motif de reprise',1000);(await store.sql.prepare("UPDATE outbox SET status='pending',attempts=0,next_at=0,last_error=NULL WHERE id=?").run(row.id));
               db.audit.unshift({id:randomUUID(),adminId:id,action:'Reprise manuelle de notification',reason,before:{mailId:row.id,status:row.status},after:{status:'pending'},at:new Date().toISOString()});
             }
