@@ -1,0 +1,323 @@
+Cahier des charges simplifié — Plateforme de 
+validation des heures coachs Boxing Center
+1. Objet du projet
+Créer une plateforme web interne destinée à permettre aux coachs indépendants de Boxing Center 
+de déclarer les cours réellement effectués en fin de mois.
+La plateforme pourra être hébergée sur un sous-domaine Boxing Center, par exemple :
+coachs.boxingcenter.fr
+ou tout autre sous-domaine validé par la direction.
+L’objectif est de simplifier, fiabiliser et automatiser la vérification des heures de coaching, sans 
+générer automatiquement de facture.
+2. Clubs concernés
+La plateforme devra intégrer les clubs Boxing Center suivants :
+1. Toulouse Minimes / Barrière de Paris ;
+2. Ramonville ;
+3. Saint-Cyprien ;
+4. Toulouse États-Unis 
+Précision importante
+Dans un premier temps, Portet-sur-Garonne restera indépendant et ne sera pas intégré au 
+système de sélection des cours.
+Les clubs actifs en phase 1 seront donc :
+• Minimes ;
+• Ramonville ;
+• Saint-Cyprien ;
+• États-Unis.
+3. Particularité du club États-Unis
+Le club Boxing Center États-Unis comporte plusieurs espaces avec des plannings distincts.
+La plateforme devra prévoir des sous-catégories pour ce club :
+• États-Unis — Salle MMA ;
+• États-Unis — Salle Boxing Fitness ;
+• États-Unis — Salle Boxe.
+Le coach devra donc sélectionner :
+1. le club États-Unis ;
+2. puis l’espace concerné ;
+3. puis le planning correspondant.
+4. Création de compte coach
+Chaque coach devra créer un compte personnel avant d’utiliser la plateforme.
+Informations demandées
+Formulaire simple avec :
+• nom ;
+• prénom ;
+• nom commercial de l’entreprise ou de l’association ;
+• téléphone ;
+• adresse e-mail ;
+• mot de passe.
+Chaque coach devra ensuite se connecter à son espace pour déclarer ses cours.
+5. Parcours utilisateur coach
+Étape 1 — Connexion
+Le coach se connecte à son compte personnel.
+Étape 2 — Choix du mois et de l’année
+Le coach sélectionne :
+• le mois concerné : août, septembre, octobre, etc. ;
+• l’année concernée, par défaut 2026.
+Étape 3 — Choix du club
+Le coach sélectionne le club sur lequel il souhaite déclarer ses cours :
+• Minimes ;
+• Ramonville ;
+• Saint-Cyprien ;
+• États-Unis.
+Si le coach sélectionne États-Unis, il devra ensuite choisir l’espace :
+• Salle MMA ;
+• Salle Fitness ;
+• Salle Boxe.
+Étape 4 — Affichage du planning
+Une fois le club sélectionné, le planning hebdomadaire du club apparaît.
+Le planning devra reprendre la logique visuelle des plannings fournis en pièce jointe :
+• jours de la semaine ;
+• horaires ;
+• cours sous forme de cases ;
+• disciplines visibles ;
+• accès libre visible mais non sélectionnable ;
+• couleurs par type de cours ;
+• dates précises de la semaine affichées.
+Étape 5 — Sélection des cours réalisés
+Le coach clique directement sur les cours qu’il a réellement effectués.
+Chaque case de cours sélectionnable devra contenir au minimum :
+• nom du cours ;
+• jour ;
+• date ;
+• horaire ;
+• durée ;
+• club ;
+• espace si nécessaire ;
+• discipline.
+Les cases “accès libre” ne doivent pas être sélectionnables.
+6. Affichage par semaine
+Le coach devra pouvoir naviguer semaine par semaine sur le mois sélectionné.
+Exemple :
+• semaine 1 du mois ;
+• semaine 2 ;
+• semaine 3 ;
+• semaine 4 ;
+• semaine 5 si nécessaire.
+Chaque semaine devra afficher les dates correspondantes.
+Exemple :
+• lundi 2 novembre ;
+• mardi 3 novembre ;
+• mercredi 4 novembre ;
+• etc.
+7. Calcul automatique des cours sélectionnés
+Un encart latéral devra afficher en temps réel le cumul des cours sélectionnés.
+Cet encart devra distinguer les cours selon leur durée.
+Exemple :
+Récapitulatif en cours
+• Total cours 40 min : 4 ;
+• Total cours 1h : 2 ;
+• Total cours 1h20 : 3 ;
+• Total cours 1h30 : 8 ;
+• Total général : 17 cours.
+La plateforme ne doit pas calculer le montant à facturer.
+Objectif : compter précisément les cours effectués, par durée.
+8. Validation par club — logique de panier
+Une fois sa sélection terminée sur un club, le coach devra pouvoir cliquer sur :
+Valider ma sélection pour ce club
+Cette sélection sera ajoutée à un “panier” ou récapitulatif provisoire.
+Si le coach intervient dans plusieurs clubs, il pourra :
+1. valider sa sélection pour le premier club ;
+2. revenir au menu principal ;
+3. choisir un autre club ;
+4. sélectionner les cours effectués ;
+5. ajouter cette nouvelle sélection à son panier.
+Le panier pourra donc contenir plusieurs listes :
+• liste Minimes ;
+• liste Ramonville ;
+• liste Saint-Cyprien ;
+• liste États-Unis — Salle MMA ;
+• liste États-Unis — Salle Fitness ;
+• liste États-Unis — Salle Boxe.
+9. Panier récapitulatif final
+Le panier devra permettre au coach de vérifier l’ensemble de ses sélections avant validation 
+définitive.
+Le panier devra afficher
+Pour chaque club :
+• liste des cours sélectionnés ;
+• durées ;
+• disciplines ;
+• total par durée ;
+• total général du club.
+Puis un récapitulatif global :
+• total cours 40 min ;
+• total cours 1h ;
+• total cours 1h20 ;
+• total cours 1h30 ;
+• total tous clubs confondus.
+Le coach pourra ensuite cliquer sur :
+Valider définitivement mes heures
+10. Blocage des cours déjà sélectionnés
+Lorsqu’un coach sélectionne et valide un cours, ce cours ne doit plus pouvoir être sélectionné par 
+un autre coach.
+Comportement attendu
+Un cours déjà pris devra :
+• changer légèrement de couleur ;
+• devenir non cliquable pour les autres coachs ;
+• afficher le nom du coach ayant déclaré ce cours.
+Exemple :
+Déjà déclaré par : Valentin Tapia
+Cela permettra aux autres coachs de voir qui a sélectionné le cours en cas de désaccord.
+Objectif : éviter qu’un même cours soit déclaré par deux coachs différents.
+11. Période d’ouverture des déclarations
+Les cours ne pourront être déclarés qu’à partir du 1er jour du mois suivant.
+Exemple :
+• les cours effectués en octobre 2026 pourront être sélectionnés à partir du 1er novembre 2026 
+;
+• avant cette date, les cours d’octobre seront visibles mais non cliquables.
+Règle à intégrer
+Un coach ne doit pas pouvoir déclarer des cours du mois en cours avant la fin du mois.
+12. Validation définitive
+Une fois la validation définitive effectuée :
+• le coach ne pourra plus modifier sa sélection ;
+• les cours resteront bloqués ;
+• le récapitulatif sera enregistré ;
+• un e-mail de confirmation sera envoyé.
+Toute modification après validation devra passer par l’administrateur.
+13. Envoi automatique des e-mails
+Après validation définitive, la plateforme devra envoyer automatiquement un e-mail récapitulatif.
+Destinataires
+1. Le coach concerné ;
+2. La direction Boxing Center à l’adresse :
+boxingcenter31@gmail.com
+Contenu de l’e-mail
+L’e-mail devra contenir :
+• nom et prénom du coach ;
+• société / association ;
+• mois concerné ;
+• année ;
+• club ou clubs concernés ;
+• liste des cours sélectionnés ;
+• dates ;
+• horaires ;
+• durées ;
+• disciplines ;
+• total par durée ;
+• total général.
+14. Espace personnel coach
+Chaque coach devra disposer d’un espace personnel.
+Fonctionnalités attendues
+Le coach pourra :
+• consulter ses déclarations passées ;
+• voir les mois déjà validés ;
+• télécharger ou consulter ses récapitulatifs ;
+• vérifier l’historique de ses cours déclarés.
+Il ne pourra pas modifier une déclaration déjà validée.
+15. Accès administrateur direction
+La direction Boxing Center devra disposer d’un accès administrateur.
+Fonctionnalités admin
+L’administrateur pourra :
+• consulter tous les plannings ;
+• voir les cours déclarés par coach ;
+• voir les cours non déclarés ;
+• modifier l’attribution d’un cours ;
+• retirer un cours attribué à un coach ;
+• attribuer un cours à un autre coach ;
+• ajouter un créneau ;
+• supprimer un créneau ;
+• modifier un horaire ;
+• modifier une durée ;
+• modifier une discipline ;
+• consulter les récapitulatifs mensuels ;
+• exporter les données si nécessaire.
+Exports souhaités
+Prévoir idéalement un export :
+• CSV ;
+• Excel ;
+• PDF récapitulatif.
+16. Gestion des plannings
+Les plannings devront être administrables.
+La direction doit pouvoir modifier les plannings si les horaires changent en cours de saison.
+Données à prévoir pour chaque cours
+Chaque cours devra contenir :
+• club ;
+• espace si nécessaire ;
+• jour ;
+• horaire de début ;
+• horaire de fin ;
+• durée ;
+• discipline ;
+• catégorie de cours ;
+• couleur ;
+• statut : sélectionnable / non sélectionnable ;
+• coach déclaré si déjà attribué.
+Les plannings de départ devront être créés à partir des visuels fournis :
+• Minimes / Barrière de Paris ;
+• Ramonville ;
+• Saint-Cyprien ;
+• États-Unis — Salle MMA ;
+• États-Unis — Salle Boxing Fitness ;
+• États-Unis — Salle Boxe.
+17. Interface et design
+Le design devra rester simple, lisible et efficace.
+Il devra reprendre l’identité visuelle Boxing Center :
+• fond sombre ;
+• couleurs Boxing Center ;
+• boutons visibles ;
+• planning clair ;
+• typographie lisible ;
+• cases de cours colorées ;
+• ergonomie simple.
+Des textes explicatifs de type tutoriel pourront être ajoutés pour guider les coachs.
+Exemples :
+• “Sélectionnez le mois concerné.”
+• “Cliquez sur les cours que vous avez réellement effectués.”
+• “Validez votre sélection par club avant de passer à un autre club.”
+• “Une fois la validation finale effectuée, vous ne pourrez plus modifier votre déclaration.”
+18. Sécurité et fiabilité
+La plateforme devra prévoir :
+• connexion sécurisée ;
+• mot de passe protégé ;
+• accès coach limité à son compte ;
+• accès admin réservé à la direction ;
+• historique des modifications admin ;
+• horodatage des validations ;
+• blocage des doublons ;
+• sauvegarde des données ;
+• système anti-erreur avant validation finale.
+Avant validation définitive, un message de confirmation devra apparaître :
+Attention : après validation définitive, vous ne 
+pourrez plus modifier votre déclaration. 
+Confirmez-vous l’enregistrement ?
+19. Points importants à respecter
+La plateforme ne doit pas :
+• calculer le montant à facturer ;
+• générer automatiquement une facture ;
+• permettre à deux coachs de déclarer le même cours ;
+• permettre au coach de modifier une déclaration validée ;
+• permettre la déclaration d’un mois avant le 1er du mois suivant ;
+• rendre les cases “accès libre” sélectionnables.
+La plateforme doit :
+• compter les cours par durée ;
+• permettre la sélection sur plusieurs clubs ;
+• créer un panier récapitulatif ;
+• envoyer un e-mail au coach et à la direction ;
+• permettre à l’admin de corriger si nécessaire.
+20. Livrables attendus
+Les équipes web devront livrer :
+1. Plateforme web en ligne.
+2. Système de comptes coachs.
+3. Système de connexion admin.
+4. Choix du mois et de l’année.
+5. Sélection des clubs.
+6. Sous-catégories pour États-Unis.
+7. Plannings interactifs semaine par semaine.
+8. Cases de cours cliquables.
+9. Blocage des cours déjà sélectionnés.
+10.Affichage du coach ayant déjà déclaré un cours.
+11.Récapitulatif latéral en temps réel.
+12.Panier multi-clubs.
+13.Récapitulatif final.
+14.Validation définitive.
+15.Envoi automatique des e-mails.
+16.Historique coach.
+17.Tableau de bord admin.
+18.Modification admin des cours et plannings.
+19.Export CSV / Excel / PDF si possible.
+20.Design cohérent avec Boxing Center.
+21. Résultat attendu
+La plateforme devra permettre aux coachs Boxing Center de déclarer simplement les cours 
+réellement effectués chaque mois.
+Objectif final :
+fiabiliser le suivi des heures coachs, éviter les 
+doublons, réduire les erreurs de déclaration et 
+faciliter le contrôle par la direction Boxing 
+Center.
+La plateforme devra être simple à utiliser, claire visuellement, sécurisée, et adaptée aux plannings 
+réels des clubs Boxing Center.

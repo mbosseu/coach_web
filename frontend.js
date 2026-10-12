@@ -190,7 +190,7 @@ function render(){
   const reference=anchor?{action:anchor.dataset.action,id:anchor.dataset.id,go:anchor.dataset.go}:null;
   const agendaScroll=document.querySelector('.agenda-scroll')?.scrollLeft||0;
   if(state.dialog&&anchor&&!anchor.closest('.modal'))state.dialogReturn=reference;
-  document.querySelector('#app').innerHTML=user()?`<a class="skip-link" href="#main-content" data-action="skip-content">Aller au contenu</a>${topbar()}<div class="shell">${nav()}<main class="content" id="main-content">${storageWarning?`<div role="alert" class="alert">${escapeHTML(storageWarning)}</div>`:''}${view()}</main></div>${state.dialog?(state.dialog.type==='retryMail'?retryMailDialog():dialogView()):''}${!tour.active?'<button class="tour-fab" data-action="start-tour" aria-label="Aide interactive" title="Aide interactive">?</button>':''}${!tour.active?'<button class="tour-fab" data-action="start-tour" aria-label="Aide interactive" title="Aide interactive">?</button>':''}`:auth();
+  document.querySelector('#app').innerHTML=user()?`<a class="skip-link" href="#main-content" data-action="skip-content">Aller au contenu</a>${topbar()}<div class="shell">${nav()}<main class="content" id="main-content">${storageWarning?`<div role="alert" class="alert">${escapeHTML(storageWarning)}</div>`:''}${view()}</main></div>${state.dialog?(state.dialog.type==='retryMail'?retryMailDialog():dialogView()):''}${!tour.active?'<button class="tour-fab" data-action="start-tour" aria-label="Aide interactive" title="Aide interactive">?</button>':''}`:auth();
   if(!user()||state.dialog)state.navOpen=false;
   syncNavigation();
   document.querySelector('.modal #form-status')?.setAttribute('id','dialog-status');
@@ -256,7 +256,7 @@ const tourAdminSteps=[
 ];
 const tour=(function(){
   let active=false,step=0,steps=[],els={};
-  function pos(el){const r=el.getBoundingClientRect();return{top:r.top+window.scrollY,left:r.left+window.scrollX,width:r.width,height:r.height}}
+  function pos(el){const r=el.getBoundingClientRect();return{top:r.top,left:r.left,width:r.width,height:r.height}}
   function createDOM(){
     const d=document.createElement('div');d.id='tour-layer';
     d.innerHTML='<div class="tour-backdrop"></div><div class="tour-spot"></div><div class="tour-tooltip"><div class="tour-arrow"></div><div class="tour-header"><span class="tour-counter"></span><button class="tour-close" aria-label="Fermer">&times;</button></div><div class="tour-progress"><div class="tour-progress-fill"></div></div><h3 class="tour-title"></h3><p class="tour-text"></p><div class="tour-nav"><button class="tour-btn tour-prev">\u2190 Pr\u00e9c\u00e9dent</button><button class="tour-btn tour-skip">Passer le guide</button><button class="tour-btn tour-btn-primary tour-next">Suivant \u2192</button></div></div>';
@@ -283,19 +283,19 @@ const tour=(function(){
     const selectors=s.target?s.target.split(','):[];
     let el=null;for(const sel of selectors){el=document.querySelector(sel.trim());if(el)break}
     if(el){
-      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.scrollIntoView({block:'center'});
       const p=pos(el);const pad=8;
       els.spot.style.cssText='display:block;top:'+(p.top-pad)+'px;left:'+(p.left-pad)+'px;width:'+(p.width+pad*2)+'px;height:'+(p.height+pad*2)+'px;border-radius:10px';
       const vp=el.getBoundingClientRect();
       const tipW=Math.min(340,window.innerWidth-32);
       let tTop,tLeft,arrowSide;
-      if(vp.bottom+16+200<window.innerHeight){tTop=vp.bottom+16+window.scrollY;arrowSide='top'}
-      else if(vp.top-16-200>0){tTop=vp.top-16-200+window.scrollY;arrowSide='bottom'}
-      else{tTop=Math.max(20,vp.top+window.scrollY);arrowSide='top'}
-      tLeft=Math.max(16,Math.min(window.innerWidth-tipW-16,vp.left+vp.width/2-tipW/2+window.scrollX));
+      if(vp.bottom+16+200<window.innerHeight){tTop=vp.bottom+16;arrowSide='top'}
+      else if(vp.top-16-200>0){tTop=vp.top-16-200;arrowSide='bottom'}
+      else{tTop=Math.max(20,vp.top);arrowSide='top'}
+      tLeft=Math.max(16,Math.min(window.innerWidth-tipW-16,vp.left+vp.width/2-tipW/2));
       els.tip.style.cssText='top:'+tTop+'px;left:'+tLeft+'px;max-width:'+tipW+'px';
       els.arrow.className='tour-arrow tour-arrow-'+arrowSide;
-      const arrowX=Math.max(24,Math.min(tipW-24,vp.left+vp.width/2-tLeft+window.scrollX));
+      const arrowX=Math.max(24,Math.min(tipW-24,vp.left+vp.width/2-tLeft));
       els.arrow.style.left=arrowX+'px';
     }else{
       els.spot.style.display='none';
@@ -314,6 +314,7 @@ const tour=(function(){
     active=false;step=0;
     if(els.layer)els.layer.classList.remove('tour-active');
     if(!guideDone)api('guide-done',{}).catch(()=>{});guideDone=true;
+    render();
   }
   return{
     start(){if(active)return;active=true;step=0;steps=user()?.role==='admin'?tourAdminSteps:tourCoachSteps;show()},
