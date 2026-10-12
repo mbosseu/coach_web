@@ -162,6 +162,20 @@ function createApp(cfg,{store,fetcher=fetch,background=!cfg.serverless,defer}={}
               if(!v.active){(await store.sql.prepare('DELETE FROM sessions WHERE user_id=?').run(coach.id));(await invalidateResets(coach.id));for(const [cid,a]of Object.entries(db.assignments))if(a.coachId===coach.id&&a.status==='reserved')delete db.assignments[cid];for(const type of ['baskets','drafts'])for(const key of Object.keys(db[type]))if(key.startsWith(coach.id+':'))delete db[type][key]}
               db.audit.unshift({id:randomUUID(),adminId:id,action:v.active?'Activation du compte':'Suspension du compte',reason:string(v.reason,'Motif',1000),before:{coachId:coach.id,active:coach.active},after:{active:v.active},at:new Date().toISOString()});
             }
+            else if(v.action==='deleteAccount'){
+              const coach=db.users.find(u=>u.id===v.id&&u.role==='coach');if(!coach)throw A.fail('Compte coach introuvable.');
+              const reason=string(v.reason,'Motif',1000);
+              const declCount=db.declarations.filter(d=>d.coachId===coach.id).length;
+              const snapshot={coachId:coach.id,email:coach.email,name:(coach.firstName||'')+' '+(coach.lastName||''),company:coach.company,declarations:declCount};
+              (await store.sql.prepare('DELETE FROM sessions WHERE user_id=?').run(coach.id));
+              (await invalidateResets(coach.id));
+              (await store.sql.prepare('DELETE FROM outbox WHERE owner_id=?').run(coach.id));
+              (await store.sql.prepare('DELETE FROM users WHERE id=?').run(coach.id));
+              for(const [cid,a]of Object.entries(db.assignments))if(a.coachId===coach.id)delete db.assignments[cid];
+              for(const type of ['baskets','drafts'])for(const key of Object.keys(db[type]))if(key.startsWith(coach.id+':'))delete db[type][key];
+              db.declarations=db.declarations.filter(d=>d.coachId!==coach.id);
+              db.audit.unshift({id:randomUUID(),adminId:id,action:'Suppression du compte coach',reason,before:snapshot,after:{deleted:true},at:new Date().toISOString()});
+            }
             else if(v.action==='retryMail'){
               const row=(await store.sql.prepare('SELECT id,status,expires FROM outbox WHERE id=?').get(string(v.id,'Notification')));
               if(cfg.mailMode!=='brevo'||!row||!['failed','uncertain'].includes(row.status)||row.expires&&row.expires<Date.now()||v.verified!==true)throw A.fail('Vérifiez la configuration et l’absence d’envoi dans Brevo avant la reprise.');
