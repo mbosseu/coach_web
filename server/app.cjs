@@ -183,6 +183,7 @@ function createApp(cfg,{store,fetcher=fetch,background=!cfg.serverless,defer}={}
               db.audit.unshift({id:randomUUID(),adminId:id,action:'Reprise manuelle de notification',reason,before:{mailId:row.id,status:row.status},after:{status:'pending'},at:new Date().toISOString()});
             }
             else if(v.action==='logExport'){period(v.period);if(!['CSV','Excel XLSX','Impression / PDF'].includes(v.format))throw A.fail('Format invalide.');const list=BC.targets.flatMap(t=>BC.courses(db,t.id,v.period)).filter(c=>db.assignments[c.id]?.status==='validated'&&(!v.target||v.target==='all'||c.target===v.target));db.exportLog.unshift({format:v.format,period:v.period,count:list.length,adminId:id,at:new Date().toISOString()})}
+            else if(v.action==='setCoachColor'){const cid=string(v.coachId,'Coach');if(!db.users.some(u=>u.id===cid))throw A.fail('Coach introuvable.');if(!v.color||!/^#[0-9a-fA-F]{6}$/.test(v.color))throw A.fail('Couleur invalide.');if(!db.coachColors)db.coachColors={};db.coachColors[cid]=v.color}
             else throw A.fail('Action inconnue.');
           }
           for(const declaration of db.declarations)if(!declaration.coachSnapshot){const owner=db.users.find(u=>u.id===declaration.coachId);if(owner)declaration.coachSnapshot={...owner};}

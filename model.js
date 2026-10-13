@@ -16,7 +16,7 @@
     const start=new Date(first);start.setDate(start.getDate()-(start.getDay()+6)%7);
     const result=[];while(start<=end){const days=[];for(let i=0;i<7;i++){const day=new Date(start);day.setDate(day.getDate()+i);days.push(dateKey(day))}result.push(days);start.setDate(start.getDate()+7)}return result;
   }
-  function createDB(){return {version:2,users:[],drafts:{},baskets:{},assignments:{},declarations:[],overrides:{},extra:[],deleted:[],audit:[],exportLog:[],credentials:{}}}
+  function createDB(){return {version:2,users:[],drafts:{},baskets:{},assignments:{},declarations:[],overrides:{},extra:[],deleted:[],audit:[],exportLog:[],coachColors:{},credentials:{}}}
   function courses(db,target,period){
     const dates=weeks(period).flat().filter(d=>d.startsWith(period));const result=[];
     // Les visuels indiquent uniquement « saison 2026–2027 » : hypothèse explicite dans le rapport.

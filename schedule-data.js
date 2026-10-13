@@ -11,13 +11,13 @@
     {id:'etats-boxe',club:'États-Unis',space:'Salle Boxe',photo:'etats-unis.webp',source:'planning-etats-boxe-officiel.jpeg'}
   ];
   const categories = {
-    anglaise:{name:'Boxe anglaise',color:'#3769ad'},competition:{name:'Compétition',color:'#aa3348'},
-    camp:{name:'Boxing Camp',color:'#a57419'},lady:{name:'Boxing Lady',color:'#a34280'},
-    jeunes:{name:'École / jeunes',color:'#257e98'},kick:{name:'Pieds-poings / kick',color:'#b2612c'},
-    free:{name:'Accès libre',color:'#737f90'},grappling:{name:'Grappling',color:'#14776c'},
-    mma:{name:'MMA',color:'#7252bf'},jjb:{name:'Jiu-jitsu brésilien',color:'#927313'},
-    hyrox:{name:'Hyrox',color:'#932693'},cross:{name:'Cross-training',color:'#538018'},
-    hiit:{name:'Boxing HIIT',color:'#197340'}
+    anglaise:{name:'Boxe anglaise',color:'#2563EB'},competition:{name:'Compétition',color:'#DC2626'},
+    camp:{name:'Boxing Camp',color:'#D97706'},lady:{name:'Boxing Lady',color:'#DB2777'},
+    jeunes:{name:'École / jeunes',color:'#0891B2'},kick:{name:'Pieds-poings / kick',color:'#EA580C'},
+    free:{name:'Accès libre',color:'#9CA3AF'},grappling:{name:'Grappling',color:'#059669'},
+    mma:{name:'MMA',color:'#7C3AED'},jjb:{name:'Jiu-jitsu brésilien',color:'#CA8A04'},
+    hyrox:{name:'Hyrox',color:'#C026D3'},cross:{name:'Cross-training',color:'#16A34A'},
+    hiit:{name:'Boxing HIIT',color:'#0D9488'}
   };
   const templates=[];
   function add(target,days,name,start,end,category,discipline,area='') {

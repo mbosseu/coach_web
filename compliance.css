@@ -360,3 +360,10 @@ body:has(.topbar) a:focus-visible{outline:3px solid #7c5cc4;outline-offset:3px;b
   .day-tab span{font-size:15px}
   .app-nav-link{font-size:13px!important}
 }
+
+/* ── 23. Coach color picker ── */
+.coach-color-picker{width:36px;height:36px;padding:2px;border:2px solid #d1d5db;border-radius:8px;cursor:pointer;background:transparent}
+.coach-color-picker:hover{border-color:#7c5cc4}
+.coach-color-picker::-webkit-color-swatch-wrapper{padding:2px}
+.coach-color-picker::-webkit-color-swatch{border:none;border-radius:4px}
+.coach-color-picker::-moz-color-swatch{border:none;border-radius:4px}
