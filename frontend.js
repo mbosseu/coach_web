@@ -3,7 +3,7 @@
 let db={...BC.createDB(),users:[]},csrf='',mailEnabled=false,storageWarning='',busy=false,sessionReady=false,sessionError='',guideDone=false;
 const current=new Date(),previous=new Date(current.getFullYear(),current.getMonth()-1,1);
 const state={page:'dashboard',period:BC.periodKey(previous),target:'minimes',week:0,mobileDay:0,userId:null,detailId:'',dialog:null,authView:'login',authRole:'coach',adminFilter:'all',coachFilter:'all',search:'',navOpen:false};
-const COACH_PALETTE=['#2563EB','#DC2626','#D97706','#059669','#7C3AED','#DB2777','#0EA5E9','#EA580C','#CA8A04','#C026D3','#16A34A','#0891B2','#4F46E5','#E11D48','#0D9488'];
+const COACH_PALETTE=['#2563EB','#DC2626','#F97316','#059669','#8B5CF6','#EC4899','#EAB308','#06B6D4','#D946EF','#84CC16','#9F1239','#B45309','#0F766E','#1E3A8A','#78716C'];
 function getCoachColor(coachId){if(db.coachColors?.[coachId])return db.coachColors[coachId];const coaches=db.users.filter(u=>u.role==='coach').sort((a,b)=>a.id.localeCompare(b.id));const idx=coaches.findIndex(u=>u.id===coachId);return COACH_PALETTE[idx%COACH_PALETTE.length]||COACH_PALETTE[0]}
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const compactNavigation=window.matchMedia('(max-width:1024px)');

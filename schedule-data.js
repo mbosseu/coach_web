@@ -12,12 +12,12 @@
   ];
   const categories = {
     anglaise:{name:'Boxe anglaise',color:'#2563EB'},competition:{name:'Compétition',color:'#DC2626'},
-    camp:{name:'Boxing Camp',color:'#D97706'},lady:{name:'Boxing Lady',color:'#DB2777'},
-    jeunes:{name:'École / jeunes',color:'#0891B2'},kick:{name:'Pieds-poings / kick',color:'#EA580C'},
+    camp:{name:'Boxing Camp',color:'#F97316'},lady:{name:'Boxing Lady',color:'#EC4899'},
+    jeunes:{name:'École / jeunes',color:'#EAB308'},kick:{name:'Pieds-poings / kick',color:'#9F1239'},
     free:{name:'Accès libre',color:'#9CA3AF'},grappling:{name:'Grappling',color:'#059669'},
-    mma:{name:'MMA',color:'#7C3AED'},jjb:{name:'Jiu-jitsu brésilien',color:'#CA8A04'},
-    hyrox:{name:'Hyrox',color:'#C026D3'},cross:{name:'Cross-training',color:'#16A34A'},
-    hiit:{name:'Boxing HIIT',color:'#0D9488'}
+    mma:{name:'MMA',color:'#8B5CF6'},jjb:{name:'Jiu-jitsu brésilien',color:'#06B6D4'},
+    hyrox:{name:'Hyrox',color:'#D946EF'},cross:{name:'Cross-training',color:'#84CC16'},
+    hiit:{name:'Boxing HIIT',color:'#B45309'}
   };
   const templates=[];
   function add(target,days,name,start,end,category,discipline,area='') {
