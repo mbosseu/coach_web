@@ -5,7 +5,8 @@
       "name": "dev",
       "runtimeExecutable": "node",
       "runtimeArgs": ["scripts/start.cjs"],
-      "port": 4173
+      "port": 4173,
+      "url": "http://127.0.0.1:4173"
     }
   ]
 }
