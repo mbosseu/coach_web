@@ -15,9 +15,8 @@ function poolOptions(cfg){
   const url=new URL(cfg.databaseUrl);
   // Never let connection-string SSL options override certificate verification.
   for(const name of ['sslmode','sslcert','sslkey','sslrootcert'])url.searchParams.delete(name);
-  return{connectionString:url.toString(),max:2,idleTimeoutMillis:10000,
-    // Cold starts on Vercel + Supavisor need a wider first-connect budget.
-    connectionTimeoutMillis:cfg.serverless?20000:10000,
+  return{connectionString:url.toString(),max:3,idleTimeoutMillis:15000,
+    connectionTimeoutMillis:cfg.serverless?15000:8000,
     allowExitOnIdle:true,ssl:{rejectUnauthorized:true,ca:[...tls.getCACertificates('default'),supabaseCa,...(cfg.databaseCa?[cfg.databaseCa.replace(/\\n/g,'\n')]:[])]}};
 }
 class PostgresStore{
@@ -42,13 +41,23 @@ class PostgresStore{
     }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
   }
   async profiles(){return(await this.sql.prepare('SELECT id,role,active,guide_done,profile FROM users').all()).map(u=>({...JSON.parse(u.profile),id:u.id,role:u.role,active:Boolean(u.active),guideDone:Boolean(u.guide_done)}))}
-  async load(){const row=await this.sql.prepare('SELECT * FROM state WHERE id=1').get();if(!row)throw Object.assign(Error('Base non initialisée.'),{status:503});const db=JSON.parse(row.payload);db.users=await this.profiles();db.audit=(await this.sql.prepare('SELECT payload FROM audit ORDER BY rowid DESC').all()).map(r=>JSON.parse(r.payload));db.revision=row.revision;return db}
+  async load({skipAudit=false}={}){const row=await this.sql.prepare('SELECT * FROM state WHERE id=1').get();if(!row)throw Object.assign(Error('Base non initialisée.'),{status:503});const db=JSON.parse(row.payload);db.users=await this.profiles();db.audit=skipAudit?[]:(await this.sql.prepare('SELECT payload FROM audit ORDER BY rowid DESC').all()).map(r=>JSON.parse(r.payload));db.revision=row.revision;return db}
   async save(db){
     if(!this.context.getStore())throw Error('Écriture hors transaction interdite.');
     await this.query('INSERT INTO boxing_center.audit(id,payload) SELECT id,payload FROM jsonb_to_recordset($1::jsonb) AS item(id text,payload text) ON CONFLICT(id) DO NOTHING',[JSON.stringify(db.audit.map(entry=>({id:entry.id,payload:JSON.stringify(entry)})))]);
-    await this.query('DELETE FROM boxing_center.assignments');await this.query('DELETE FROM boxing_center.declarations');
-    await this.query('INSERT INTO boxing_center.assignments(course_id,coach_id,status) SELECT course_id,coach_id,status FROM jsonb_to_recordset($1::jsonb) AS item(course_id text,coach_id text,status text)',[JSON.stringify(Object.entries(db.assignments).map(([course_id,a])=>({course_id,coach_id:a.coachId,status:a.status})))]);
-    await this.query('INSERT INTO boxing_center.declarations(id,coach_id,period) SELECT id,coach_id,period FROM jsonb_to_recordset($1::jsonb) AS item(id text,coach_id text,period text)',[JSON.stringify(db.declarations.map(d=>({id:d.id,coach_id:d.coachId,period:d.period})))]);
+    const oldAssign=Object.fromEntries((await this.query('SELECT course_id,coach_id,status FROM boxing_center.assignments')).rows.map(r=>[r.course_id,{coachId:r.coach_id,status:r.status}]));
+    const insA=[],updA=[],delA=[];
+    for(const [id,a]of Object.entries(db.assignments)){const old=oldAssign[id];if(!old)insA.push({course_id:id,coach_id:a.coachId,status:a.status});else if(old.coachId!==a.coachId||old.status!==a.status)updA.push({course_id:id,coach_id:a.coachId,status:a.status});delete oldAssign[id]}
+    delA.push(...Object.keys(oldAssign));
+    if(insA.length)await this.query('INSERT INTO boxing_center.assignments(course_id,coach_id,status) SELECT course_id,coach_id,status FROM jsonb_to_recordset($1::jsonb) AS item(course_id text,coach_id text,status text)',[JSON.stringify(insA)]);
+    for(const a of updA)await this.query('UPDATE boxing_center.assignments SET coach_id=$1,status=$2 WHERE course_id=$3',[a.coach_id,a.status,a.course_id]);
+    if(delA.length)await this.query('DELETE FROM boxing_center.assignments WHERE course_id=ANY($1)',[delA]);
+    const oldDecl=new Set((await this.query('SELECT id FROM boxing_center.declarations')).rows.map(r=>r.id));
+    const newDecl=new Set(db.declarations.map(d=>d.id));
+    const insD=db.declarations.filter(d=>!oldDecl.has(d.id));
+    const delD=[...oldDecl].filter(id=>!newDecl.has(id));
+    if(insD.length)await this.query('INSERT INTO boxing_center.declarations(id,coach_id,period) SELECT id,coach_id,period FROM jsonb_to_recordset($1::jsonb) AS item(id text,coach_id text,period text)',[JSON.stringify(insD.map(d=>({id:d.id,coach_id:d.coachId,period:d.period})))]);
+    if(delD.length)await this.query('DELETE FROM boxing_center.declarations WHERE id=ANY($1)',[delD]);
     const payload={...db,users:[],audit:[]};delete payload.revision;delete payload.credentials;
     await this.sql.prepare('UPDATE state SET payload=?,revision=revision+1 WHERE id=1').run(JSON.stringify(payload));
   }

@@ -36,13 +36,17 @@ class Store{
   }
   transaction(fn){return this.request(async()=>{this.sql.exec('BEGIN IMMEDIATE');try{const result=await fn();this.sql.exec('COMMIT');return result}catch(e){this.sql.exec('ROLLBACK');throw e}})}
   profiles(){return this.sql.prepare('SELECT id,role,active,guide_done,profile FROM users').all().map(u=>({...JSON.parse(u.profile),id:u.id,role:u.role,active:Boolean(u.active),guideDone:Boolean(u.guide_done)}))}
-  load(){const row=this.sql.prepare('SELECT * FROM state WHERE id=1').get();const db=JSON.parse(row.payload);db.users=this.profiles();db.audit=this.sql.prepare('SELECT payload FROM audit ORDER BY rowid DESC').all().map(r=>JSON.parse(r.payload));db.revision=row.revision;return db}
+  load({skipAudit=false}={}){const row=this.sql.prepare('SELECT * FROM state WHERE id=1').get();const db=JSON.parse(row.payload);db.users=this.profiles();db.audit=skipAudit?[]:this.sql.prepare('SELECT payload FROM audit ORDER BY rowid DESC').all().map(r=>JSON.parse(r.payload));db.revision=row.revision;return db}
   save(db){
     for(const entry of db.audit)this.sql.prepare('INSERT OR IGNORE INTO audit VALUES(?,?)').run(entry.id,JSON.stringify(entry));
     const payload={...db,users:[],audit:[]};delete payload.revision;delete payload.credentials;
-    this.sql.exec('DELETE FROM assignments; DELETE FROM declarations;');
-    for(const [id,a]of Object.entries(db.assignments))this.sql.prepare('INSERT INTO assignments VALUES(?,?,?)').run(id,a.coachId,a.status);
-    for(const d of db.declarations)this.sql.prepare('INSERT INTO declarations VALUES(?,?,?)').run(d.id,d.coachId,d.period);
+    const dbAssign=Object.fromEntries(this.sql.prepare('SELECT course_id,coach_id,status FROM assignments').all().map(r=>[r.course_id,{coachId:r.coach_id,status:r.status}]));
+    for(const [id,a]of Object.entries(db.assignments)){const old=dbAssign[id];if(!old)this.sql.prepare('INSERT INTO assignments VALUES(?,?,?)').run(id,a.coachId,a.status);else if(old.coachId!==a.coachId||old.status!==a.status)this.sql.prepare('UPDATE assignments SET coach_id=?,status=? WHERE course_id=?').run(a.coachId,a.status,id);delete dbAssign[id]}
+    for(const id of Object.keys(dbAssign))this.sql.prepare('DELETE FROM assignments WHERE course_id=?').run(id);
+    const dbDecl=new Set(this.sql.prepare('SELECT id FROM declarations').all().map(r=>r.id));
+    const newDecl=new Set(db.declarations.map(d=>d.id));
+    for(const d of db.declarations)if(!dbDecl.has(d.id))this.sql.prepare('INSERT INTO declarations VALUES(?,?,?)').run(d.id,d.coachId,d.period);
+    for(const id of dbDecl)if(!newDecl.has(id))this.sql.prepare('DELETE FROM declarations WHERE id=?').run(id);
     this.sql.prepare('UPDATE state SET payload=?,revision=revision+1 WHERE id=1').run(JSON.stringify(payload));
   }
   queue(id,declId,ownerId,recipient,payload,expires=null){this.sql.prepare('INSERT INTO outbox(id,decl_id,owner_id,recipient,payload,expires) VALUES(?,?,?,?,?,?)').run(id,declId,ownerId,recipient,JSON.stringify(payload),expires)}

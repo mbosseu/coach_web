@@ -14,7 +14,8 @@ const string=(value,name,max=200)=>{if(typeof value!=='string'||!value.trim()||v
 const today=()=>BC.parseDate(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()));
 async function filtered(store,id,cfg,csrf){
   if(!id)return{userId:null,csrf,mailEnabled:cfg.mailMode==='brevo',serverDate:BC.dateKey(today())};
-  const db=(await store.load()),u=db.users.find(x=>x.id===id);if(!u)throw A.fail('Session expirée.',401);
+  const isAdmin=!!(await store.sql.prepare('SELECT role FROM users WHERE id=?').get(id))?.role==='admin';
+  const db=(await store.load({skipAudit:!isAdmin})),u=db.users.find(x=>x.id===id);if(!u)throw A.fail('Session expirée.',401);
   const mail=(await store.sql.prepare('SELECT id,decl_id,owner_id,recipient,status,message_id,last_error FROM outbox WHERE decl_id IS NOT NULL').all());
   db.deliveries=mail.filter(x=>u.role==='admin'||x.owner_id===id).map(({owner_id,...rest})=>rest);
   if(u.role==='admin')db.mailQueue=(await store.sql.prepare('SELECT id,decl_id,recipient,status,attempts,next_at,message_id,last_error,expires FROM outbox ORDER BY rowid DESC LIMIT 200').all());
@@ -143,7 +144,7 @@ function createApp(cfg,{store,fetcher=fetch,background=!cfg.serverless,defer}={}
         (await store.transaction(async()=>{
           if(!(await A.getSession(store,req.headers.cookie)))throw A.fail('Session expirée.',401);
           me=await store.sql.prepare('SELECT * FROM users WHERE id=? AND active=1').get(s.user_id);if(!me)throw A.fail('Compte indisponible.',401);
-          const db=(await store.load()),id=me.id;
+          const db=(await store.load({skipAudit:true})),id=me.id;
           if(['toggle','addClub','removeBasket','validate'].includes(v.action)){
             if(me.role!=='coach')throw A.fail('Action réservée aux coachs.',403);period(v.period);
             if(v.action==='toggle')BC.toggle(db,string(v.id,'Cours'),id,v.period,today());

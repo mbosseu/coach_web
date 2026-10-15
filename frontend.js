@@ -6,6 +6,7 @@ const state={page:'dashboard',period:BC.periodKey(previous),target:'minimes',wee
 const COACH_PALETTE=['#2563EB','#DC2626','#F97316','#059669','#8B5CF6','#EC4899','#EAB308','#06B6D4','#D946EF','#84CC16','#9F1239','#B45309','#0F766E','#1E3A8A','#78716C'];
 function getCoachColor(coachId){if(db.coachColors?.[coachId])return db.coachColors[coachId];const coaches=db.users.filter(u=>u.role==='coach'&&u.active).sort((a,b)=>a.id.localeCompare(b.id));const idx=coaches.findIndex(u=>u.id===coachId);if(idx<0)return'#78716C';return COACH_PALETTE[idx%COACH_PALETTE.length]}
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+let _renderRAF=0;function scheduleRender(){if(!_renderRAF){_renderRAF=requestAnimationFrame(()=>{_renderRAF=0;render()})}}
 const compactNavigation=window.matchMedia('(max-width:1024px)');
 const escapeHTML=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fullName=u=>u?`${u.firstName} ${u.lastName}`:'Coach';
@@ -38,16 +39,16 @@ async function bootstrap(){
   sessionReady=false;sessionError='';
   if(!user())render();
   let lastError;
-  for(let attempt=0;attempt<5;attempt++){
+  for(let attempt=0;attempt<3;attempt++){
     try{
-      await api('session',null,{timeout:20000+attempt*5000});
+      await api('session',null,{timeout:15000+attempt*5000});
       sessionReady=true;sessionError='';storageWarning='';
       render();
       return;
     }catch(error){
       lastError=error;
       if(!user())render();
-      if(attempt<4)await wait(700*(attempt+1));
+      if(attempt<2)await wait(500*(attempt+1));
     }
   }
   sessionReady=false;
@@ -58,7 +59,7 @@ async function bootstrap(){
 let profileDirty=false;
 document.addEventListener('input',e=>{if(e.target.closest('form'))profileDirty=true});
 // Refresh shared availability without destroying an unfinished form or dialog.
-async function refreshShared(){if(!user()||busy||state.dialog||profileDirty||document.visibilityState==='hidden')return;try{const revision=db.revision,day=BC.dateKey(current),mailState=JSON.stringify([db.deliveries,db.mailQueue]);await api('state');if(db.revision!==revision||day!==BC.dateKey(current)||mailState!==JSON.stringify([db.deliveries,db.mailQueue]))render()}catch{toast('Actualisation indisponible. Vos données enregistrées sont conservées.',true)}}
+async function refreshShared(){if(!user()||busy||state.dialog||profileDirty||document.visibilityState==='hidden')return;try{const rev=db.revision;await api('state');if(db.revision!==rev)render()}catch{toast('Actualisation indisponible. Vos données enregistrées sont conservées.',true)}}
 setInterval(refreshShared,30000);
 window.addEventListener('focus',refreshShared);
 function deliveryStatus(d){const rows=(db.deliveries||[]).filter(x=>x.decl_id===d.id),labels={pending:'En attente',sending:'En cours',retry:'Nouvelle tentative prévue',accepted:'Envoyé',failed:'Échec — contacter la direction',uncertain:'À vérifier'};return `<div class="delivery-list" role="status">${rows.map(x=>`<p><strong>${escapeHTML(x.recipient)}</strong><br>${escapeHTML(mailEnabled?(labels[x.status]||x.status):'Envoi désactivé')}</p>`).join('')||'<p>Aucune notification enregistrée.</p>'}</div><p class="muted small-copy">${mailEnabled?'Le statut Envoyé ne garantit pas la réception en boîte mail.':'Envoi désactivé dans cet environnement. Aucun e-mail n’a été envoyé.'}</p>`}
@@ -218,7 +219,7 @@ function csv(rows){return '\ufeff'+rows.map(row=>row.map(value=>{let text=String
 function formError(form,error){const status=form.querySelector('[role="alert"]');if(status)status.textContent=error.message;else toast(error.message,true)}
 document.addEventListener('submit',async e=>{e.preventDefault();const form=e.target,values=Object.fromEntries(new FormData(form)),button=form.querySelector('[type="submit"]'),status=form.querySelector('#form-status');if(!form.reportValidity()||busy)return;if(!sessionReady){if(status)status.textContent='Patientez : la session sécurisée n’est pas encore prête.';return}busy=true;button.disabled=true;button.setAttribute('aria-busy','true');if(status&&form.id==='login-form')status.textContent='Connexion en cours…';try{
   for(const name of ['firstName','lastName','company','phone'])if(name in values&&!values[name].trim())throw Error('Renseignez toutes les coordonnées professionnelles.');
-  if(form.id==='login-form'){await api('login',{...values,role:state.authRole},{timeout:45000});navigate(user().role==='admin'?'overview':'dashboard');if(!guideDone)setTimeout(()=>tour.start(),600);}
+  if(form.id==='login-form'){await api('login',{...values,role:state.authRole},{timeout:25000});navigate(user().role==='admin'?'overview':'dashboard');if(!guideDone)setTimeout(()=>tour.start(),600);}
   else if(form.id==='register-form'){const response=await api('register',values);state.authView='login';state.authEmail=values.email;state.registrationNotice=response.message;render();}
   else if(form.id==='forgot-form'){const response=await api('reset/request',values);form.querySelector('[role="alert"]').textContent=response.message;}
   else if(form.id==='reset-form'){const response=await api('reset/confirm',{...values,token:state.resetToken});state.resetToken='';state.authView='login';history.replaceState(null,'',location.pathname);render();toast(response.message);}
@@ -346,7 +347,7 @@ document.addEventListener('click',async e=>{const button=e.target.closest('[data
   else if(action==='logout'){await api('logout',{});state.userId=null;db={...BC.createDB(),users:[]};state.dialog=null;state.navOpen=false;state.authView='login';state.authRole='coach';state.authEmail='';state.registrationNotice='';history.replaceState(null,'',location.pathname);await bootstrap()}
   else if(action==='target'){state.target=id;state.week=0;navigate('declare')}
   else if(action==='week-prev'||action==='week-next'){state.week=Math.max(0,Math.min(BC.weeks(state.period).length-1,state.week+(action==='week-next'?1:-1)));render()}
-  else if(action==='toggle-course'){try{BC.toggle(db,id,user().id,state.period,current)}catch(e){toast(e.message,true);return}button.classList.toggle('selected');button.setAttribute('aria-pressed',String(button.classList.contains('selected')));const _sel=BC.selected(db,user().id,state.period);const _cEl=document.querySelector('.summary-total strong');if(_cEl)_cEl.textContent=_sel.length;const _cLbl=document.querySelector('.summary-total .muted');if(_cLbl)_cLbl.textContent=_sel.length===1?'cours sélectionné':'cours sélectionnés';mutate('toggle',{id}).then(()=>render()).catch(e=>{toast(e.message,true);render()})}
+  else if(action==='toggle-course'){const rev=db.revision;try{BC.toggle(db,id,user().id,state.period,current)}catch(e){toast(e.message,true);return}button.classList.toggle('selected');button.setAttribute('aria-pressed',String(button.classList.contains('selected')));const _sel=BC.selected(db,user().id,state.period);const _cEl=document.querySelector('.summary-total strong');if(_cEl)_cEl.textContent=_sel.length;const _cLbl=document.querySelector('.summary-total .muted');if(_cLbl)_cLbl.textContent=_sel.length===1?'cours sélectionné':'cours sélectionnés';mutate('toggle',{id}).then(()=>{if(db.revision!==rev+1)render()}).catch(e=>{toast(e.message,true);render()})}
   else if(action==='add-club'){const count=await mutate('addClub',{target:state.target});navigate('basket');toast(count+(count===1?' cours ajouté au panier et réservé pour votre compte.':' cours ajoutés au panier et réservés pour votre compte.'))}
   else if(action==='remove-basket'){await mutate('removeBasket',{id});render();toast('Cours retiré du panier et remis à disposition.')}
   else if(action==='confirm-validation'){state.dialog={type:'validation'};render()}
