@@ -13,7 +13,7 @@ const declarationOwner=d=>d.coachSnapshot||db.users.find(u=>u.id===d.coachId);
 const user=()=>db.users.find(u=>u.id===state.userId);
 const target=()=>BC.targets.find(t=>t.id===state.target);
 const targetName=t=>`${t.club}${t.space?' · '+t.space:''}`;
-const dateLabel=(s,long=false)=>BC.parseDate(s).toLocaleDateString('fr-FR',{weekday:long?'long':undefined,day:'numeric',month:long?'long':'short',year:long?'numeric':undefined});
+const _dlc={};const dateLabel=(s,long=false)=>{const k=s+(long?'L':'S');return _dlc[k]||(_dlc[k]=BC.parseDate(s).toLocaleDateString('fr-FR',{weekday:long?'long':undefined,day:'numeric',month:long?'long':'short',year:long?'numeric':undefined}))};
 const periodLabel=p=>BC.parseDate(p+'-01').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
 const stamp=s=>new Date(s).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'});
 const btn=(text,action,cls='',extra='')=>`<button type="button" class="btn ${cls}" data-action="${action}" ${extra}>${text}</button>`;
@@ -193,7 +193,10 @@ function render(){
   const reference=anchor?{action:anchor.dataset.action,id:anchor.dataset.id,go:anchor.dataset.go}:null;
   const agendaScroll=document.querySelector('.agenda-scroll')?.scrollLeft||0;
   if(state.dialog&&anchor&&!anchor.closest('.modal'))state.dialogReturn=reference;
-  document.querySelector('#app').innerHTML=user()?`<a class="skip-link" href="#main-content" data-action="skip-content">Aller au contenu</a>${topbar()}<div class="shell">${nav()}<main class="content" id="main-content">${storageWarning?`<div role="alert" class="alert">${escapeHTML(storageWarning)}</div>`:''}${view()}</main></div>${state.dialog?(state.dialog.type==='retryMail'?retryMailDialog():dialogView()):''}${!tour.active?'<button class="tour-fab" data-action="start-tour" aria-label="Aide interactive" title="Aide interactive">?</button>':''}`:auth();
+  const loggedIn=!!user();
+  document.querySelector('#app').innerHTML=loggedIn?`<a class="skip-link" href="#main-content" data-action="skip-content">Aller au contenu</a>${topbar()}<div class="shell">${nav()}<main class="content" id="main-content">${storageWarning?`<div role="alert" class="alert">${escapeHTML(storageWarning)}</div>`:''}${view()}</main></div>${state.dialog?(state.dialog.type==='retryMail'?retryMailDialog():dialogView()):''}${!tour.active?'<button class="tour-fab" data-action="start-tour" aria-label="Aide interactive" title="Aide interactive">?</button>':''}`:auth();
+  document.body.classList.toggle('logged-in',loggedIn);
+  document.documentElement.classList.toggle('logged-in',loggedIn);
   if(!user()||state.dialog)state.navOpen=false;
   syncNavigation();
   document.querySelector('.modal #form-status')?.setAttribute('id','dialog-status');
@@ -343,7 +346,7 @@ document.addEventListener('click',async e=>{const button=e.target.closest('[data
   else if(action==='logout'){await api('logout',{});state.userId=null;db={...BC.createDB(),users:[]};state.dialog=null;state.navOpen=false;state.authView='login';state.authRole='coach';state.authEmail='';state.registrationNotice='';history.replaceState(null,'',location.pathname);await bootstrap()}
   else if(action==='target'){state.target=id;state.week=0;navigate('declare')}
   else if(action==='week-prev'||action==='week-next'){state.week=Math.max(0,Math.min(BC.weeks(state.period).length-1,state.week+(action==='week-next'?1:-1)));render()}
-  else if(action==='toggle-course'){try{BC.toggle(db,id,user().id,state.period,current)}catch(e){toast(e.message,true);return}render();mutate('toggle',{id}).then(()=>render()).catch(e=>{toast(e.message,true);render()})}
+  else if(action==='toggle-course'){try{BC.toggle(db,id,user().id,state.period,current)}catch(e){toast(e.message,true);return}button.classList.toggle('selected');button.setAttribute('aria-pressed',String(button.classList.contains('selected')));const _sel=BC.selected(db,user().id,state.period);const _cEl=document.querySelector('.summary-total strong');if(_cEl)_cEl.textContent=_sel.length;const _cLbl=document.querySelector('.summary-total .muted');if(_cLbl)_cLbl.textContent=_sel.length===1?'cours sélectionné':'cours sélectionnés';mutate('toggle',{id}).then(()=>render()).catch(e=>{toast(e.message,true);render()})}
   else if(action==='add-club'){const count=await mutate('addClub',{target:state.target});navigate('basket');toast(count+(count===1?' cours ajouté au panier et réservé pour votre compte.':' cours ajoutés au panier et réservés pour votre compte.'))}
   else if(action==='remove-basket'){await mutate('removeBasket',{id});render();toast('Cours retiré du panier et remis à disposition.')}
   else if(action==='confirm-validation'){state.dialog={type:'validation'};render()}

@@ -1,41 +1,41 @@
 /* Direction artistique intérieure : blanc, bleu nuit, violet Boxing Center */
-body:has(.topbar){background:#f5f6fb;color:#101d35}
-body:has(.topbar) .topbar{background:rgba(255,255,255,.94);border-color:#e6e8f0;color:#101d35;box-shadow:0 1px 10px rgba(16,29,53,.04)}
-body:has(.topbar) .brand em{color:#8b6fe8}
-body:has(.topbar) .top-actions .muted{color:#5f6878}
-body:has(.topbar) .sidebar{background:#fff;border-color:#e6e8f0}
-body:has(.topbar) .side-label{color:#9198a8}
-body:has(.topbar) .nav button{color:#687286}
-body:has(.topbar) .nav button.active,body:has(.topbar) .nav button:hover{background:#f0ecff;color:#3e2e86}
-body:has(.topbar) .nav button.active{box-shadow:inset 3px 0 #a78bfa}
-body:has(.topbar) .muted{color:#697386}
-body:has(.topbar) .eyebrow{color:#8064d7}
-body:has(.topbar) h1,body:has(.topbar) h2,body:has(.topbar) h3{color:#101d35}
-body:has(.topbar) .btn{background:#fff;color:#3b4560;border-color:#dfe3ec;box-shadow:0 1px 2px rgba(16,29,53,.03)}
-body:has(.topbar) .btn:hover{border-color:#b7a4f4;background:#faf9ff}
-body:has(.topbar) .btn.primary{background:#a78bfa;border-color:#a78bfa;color:#151126;box-shadow:0 5px 12px rgba(167,139,250,.2)}
-body:has(.topbar) .btn.primary:hover{background:#b8a3fb;border-color:#b8a3fb}
-body:has(.topbar) .card,body:has(.topbar) .hero,body:has(.topbar) .table-wrap,body:has(.topbar) .stepper,body:has(.topbar) .notice{background:#fff;border-color:#e3e6ee;box-shadow:0 8px 22px rgba(16,29,53,.045)}
-body:has(.topbar) .hero{background-image:linear-gradient(90deg,rgba(16,29,53,.85),rgba(16,29,53,.28)),url('assets/hero.webp')}
-body:has(.topbar) .hero h2,body:has(.topbar) .hero .muted,body:has(.topbar) .hero p{color:#fff}
-body:has(.topbar) .table th{color:#8992a3}
-body:has(.topbar) .table td{border-color:#edf0f5;color:#445067}
-body:has(.topbar) .table tr:hover{background:#fbfaff}
-body:has(.topbar) .pill{background:#e8f7f1;color:#19845d}
-body:has(.topbar) .pill.gold{background:#fff5df;color:#98701d}
-body:has(.topbar) .step{color:#929bad}
-body:has(.topbar) .step.active{background:#f0ecff;color:#3e2e86}
-body:has(.topbar) .step b{color:#8064d7}
-body:has(.topbar) .select,body:has(.topbar) .input{background:#fff;color:#26334d;border-color:#dfe3ec}
-body:has(.topbar) .select:focus,body:has(.topbar) .input:focus{outline:0;border-color:#a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.18)}
-body:has(.topbar) .schedule{background:#fff;border-color:#e3e6ee;box-shadow:0 8px 22px rgba(16,29,53,.045)}
-body:has(.topbar) .week-head{border-color:#e6e8f0}
-body:has(.topbar) .day{color:#8992a3}.day b{color:#101d35}
-body:has(.topbar) .day-col{border-color:#edf0f5}.time{color:#9aa2b0}
-body:has(.topbar) .summary-row{border-color:#edf0f5;color:#445067}
-body:has(.topbar) .summary-total{color:#101d35}
-body:has(.topbar) .alert{background:#fff8e8;color:#8d6b24;border:1px solid #f3dfac}
-body:has(.topbar) .notice{color:#445067}
-body:has(.topbar) .avatar{background:#a78bfa;color:#20153f}
-body:has(.topbar) .lesson.selected{outline-color:#8064d7}
-@media(max-width:1000px){body:has(.topbar) .sidebar{background:#fff}}
+body.logged-in{background:#f5f6fb;color:#101d35}
+body.logged-in .topbar{background:rgba(255,255,255,.94);border-color:#e6e8f0;color:#101d35;box-shadow:0 1px 10px rgba(16,29,53,.04)}
+body.logged-in .brand em{color:#8b6fe8}
+body.logged-in .top-actions .muted{color:#5f6878}
+body.logged-in .sidebar{background:#fff;border-color:#e6e8f0}
+body.logged-in .side-label{color:#9198a8}
+body.logged-in .nav button{color:#687286}
+body.logged-in .nav button.active,body.logged-in .nav button:hover{background:#f0ecff;color:#3e2e86}
+body.logged-in .nav button.active{box-shadow:inset 3px 0 #a78bfa}
+body.logged-in .muted{color:#697386}
+body.logged-in .eyebrow{color:#8064d7}
+body.logged-in h1,body.logged-in h2,body.logged-in h3{color:#101d35}
+body.logged-in .btn{background:#fff;color:#3b4560;border-color:#dfe3ec;box-shadow:0 1px 2px rgba(16,29,53,.03)}
+body.logged-in .btn:hover{border-color:#b7a4f4;background:#faf9ff}
+body.logged-in .btn.primary{background:#a78bfa;border-color:#a78bfa;color:#151126;box-shadow:0 5px 12px rgba(167,139,250,.2)}
+body.logged-in .btn.primary:hover{background:#b8a3fb;border-color:#b8a3fb}
+body.logged-in .card,body.logged-in .hero,body.logged-in .table-wrap,body.logged-in .stepper,body.logged-in .notice{background:#fff;border-color:#e3e6ee;box-shadow:0 8px 22px rgba(16,29,53,.045)}
+body.logged-in .hero{background-image:linear-gradient(90deg,rgba(16,29,53,.85),rgba(16,29,53,.28)),url('assets/hero.webp')}
+body.logged-in .hero h2,body.logged-in .hero .muted,body.logged-in .hero p{color:#fff}
+body.logged-in .table th{color:#8992a3}
+body.logged-in .table td{border-color:#edf0f5;color:#445067}
+body.logged-in .table tr:hover{background:#fbfaff}
+body.logged-in .pill{background:#e8f7f1;color:#19845d}
+body.logged-in .pill.gold{background:#fff5df;color:#98701d}
+body.logged-in .step{color:#929bad}
+body.logged-in .step.active{background:#f0ecff;color:#3e2e86}
+body.logged-in .step b{color:#8064d7}
+body.logged-in .select,body.logged-in .input{background:#fff;color:#26334d;border-color:#dfe3ec}
+body.logged-in .select:focus,body.logged-in .input:focus{outline:0;border-color:#a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.18)}
+body.logged-in .schedule{background:#fff;border-color:#e3e6ee;box-shadow:0 8px 22px rgba(16,29,53,.045)}
+body.logged-in .week-head{border-color:#e6e8f0}
+body.logged-in .day{color:#8992a3}.day b{color:#101d35}
+body.logged-in .day-col{border-color:#edf0f5}.time{color:#9aa2b0}
+body.logged-in .summary-row{border-color:#edf0f5;color:#445067}
+body.logged-in .summary-total{color:#101d35}
+body.logged-in .alert{background:#fff8e8;color:#8d6b24;border:1px solid #f3dfac}
+body.logged-in .notice{color:#445067}
+body.logged-in .avatar{background:#a78bfa;color:#20153f}
+body.logged-in .lesson.selected{outline-color:#8064d7}
+@media(max-width:1000px){body.logged-in .sidebar{background:#fff}}
